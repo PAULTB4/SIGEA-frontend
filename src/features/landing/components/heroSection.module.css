@@ -1,0 +1,265 @@
+/* ==== SECCIÓN HERO ==== */
+.heroSection {
+  position: relative;
+  padding-top: 8rem;
+  padding-bottom: 6rem;
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+/* blobs de fondo */
+.backgroundDecor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.blob1 {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20rem;
+  height: 20rem;
+  background-color: #59ebbf;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.2;
+  animation: blob 7s infinite;
+}
+
+.blob2 {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 20rem;
+  height: 20rem;
+  background-color: #a7d3eb;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.2;
+  animation: blob 7s infinite;
+  animation-delay: 2s;
+}
+
+@keyframes blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(30px, -50px) scale(1.1); }
+  66%      { transform: translate(-20px, 20px) scale(0.9); }
+}
+
+/* layout principal */
+.container {
+  position: relative;
+  z-index: 10;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* texto principal */
+.title {
+  font-size: 3rem;
+  font-weight: 900;
+  line-height: 1.2;
+  color: #18181b;
+}
+
+.titleHighlight {
+  color: #598aeb;
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: 3.75rem;
+  }
+}
+
+.descriptionBlock {
+  margin-top: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.description {
+  font-size: 1.05rem;
+  color: #0f172a;
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+  max-width: 36rem;
+}
+
+/* lista debajo de la descripción */
+.descriptionList {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+  font-size: 0.98rem;
+  color: #0f172a;
+  line-height: 1.6;
+}
+
+.descriptionList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin-bottom: 0.25rem;
+}
+
+.descriptionList li::before {
+  content: "✔";
+  font-size: 0.8rem;
+  margin-top: 0.15rem;
+  color: #59c87b;
+}
+
+/* ==== BOTONES CTA ==== */
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;          /* menos espacio entre ellos */
+  align-items: center;   /* MISMA ALTURA */
+  margin-top: 0.5rem;
+  margin-bottom: 1.75rem;
+}
+
+/* base común */
+.ctaButton,
+.secondaryCta {
+  margin: 0;                 /* por si hay estilos globales */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;            /* misma “altura de línea” */
+  cursor: pointer;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+/* botón principal */
+.ctaButton {
+  background-color: #598aeb;
+  color: #ffffff;
+  box-shadow: 0 4px 6px rgba(89, 138, 235, 0.3);
+}
+
+.ctaButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(89, 138, 235, 0.4);
+}
+
+/* botón secundario */
+.secondaryCta {
+  background-color: transparent;
+  color: #1d3a6e;
+  border-color: #598aeb;
+}
+
+.secondaryCta:hover {
+  background-color: #eff4ff;
+}
+
+/* en móvil se apilan bonitos */
+@media (max-width: 640px) {
+  .ctaRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+/* ==== “Cómo funciona SIGEA” ==== */
+.heroSteps {
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+  background-color: #f9fbff;
+  border: 1px solid #e0e7ff;
+}
+
+.stepsTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .stepsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stepItem h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.stepItem p {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.stepNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background-color: #598aeb;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-right: 0.4rem;
+}
+
+/* ==== Imagen del hero ==== */
+.illustration {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .illustration {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.heroImage {
+  display: block;
+  width: 100%;
+  max-width: 850px;   /* tamaño máximo en desktop */
+  height: auto;
+  object-fit: contain;
+}

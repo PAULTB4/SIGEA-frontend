@@ -1,0 +1,289 @@
+.nextEventSection {
+    background: #ffffff;
+    padding: 5rem 0;
+    color: #1a1a1a;
+    text-align: center;
+}
+
+.title {
+    font-size: 2rem;
+    color: #1d3a6e;
+    text-transform: uppercase;
+    margin-bottom: 2.5rem;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 2.5rem;
+    text-align: left;
+    padding: 0 1.5rem;
+}
+
+.left {
+    flex: 1 1 320px;
+    display: flex;
+    justify-content: center;
+}
+
+.flyer {
+    width: 100%;
+    max-width: 470px;
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.flyer:hover {
+    transform: scale(1.02);
+}
+
+.right {
+    flex: 1 1 520px;
+}
+
+.eventName {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1d3a6e;
+    margin-bottom: 0.5rem;
+}
+
+.eventSubtitle {
+    font-size: 1rem;
+    color: #374151;
+    margin-bottom: 1rem;
+}
+
+.eventDate {
+    background: #eaf0fa;
+    padding: 0.75rem 1rem;
+    border-left: 4px solid #3e71bf;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #d3d9e2;
+}
+
+.tabButton {
+    flex: 1;
+    padding: 0.75rem 0;
+    border: none;
+    background: #eaf0fa;
+    color: #3e71bf;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.tabButtonActive {
+    background: #3e71bf;
+    color: #ffffff;
+    border-bottom: 3px solid #59ebbf;
+}
+
+.tabButton:hover:not(.tabButtonActive) {
+    background: #dfe6f2;
+}
+
+.tabContent {
+    display: none;
+    background: #f7f9fd;
+    border-radius: 0.5rem;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    border-left: 4px solid #3e71bf;
+}
+
+.tabContentActive {
+    display: block;
+}
+
+.subTitle {
+    color: #1d3a6e;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+}
+
+.list {
+    list-style-type: "• ";
+    margin-left: 1.25rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    color: #111827;
+    line-height: 1.5;
+}
+
+.eventSection {
+    margin-top: 0.75rem;
+}
+
+.priceText {
+    font-size: 0.95rem;
+    color: #111827;
+}
+
+.helperText {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+/* Extra info (pagos + recomendaciones) */
+.extra {
+    display: flex;
+    gap: 1.75rem;
+    margin-top: 1.75rem;
+    flex-wrap: wrap;
+}
+
+.extraBlock {
+    flex: 1 1 260px;
+}
+
+.text {
+    font-size: 0.9rem;
+    color: #111827;
+    margin-bottom: 0.35rem;
+}
+
+.icon {
+    margin-right: 0.35rem;
+}
+
+.moreInfo {
+    padding-top: 0.75rem;
+}
+
+.moreInfo a {
+    color: #1d3a6e;
+    text-decoration: none;
+}
+
+.moreInfo a:hover {
+    text-decoration: underline;
+}
+
+/* Botón Inscribirse */
+.register {
+    text-align: center;
+    margin-top: 2.5rem;
+}
+
+/* Mismo estilo que el botón .ctaButton del hero */
+.registerButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background-color: #598AEB;
+    color: #FFFFFF;
+    font-size: 1.125rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(89, 138, 235, 0.3);
+}
+
+.registerButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(89, 138, 235, 0.4);
+}
+
+.registerButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+/* Modal del flyer */
+.modal {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.modalImage {
+    width: auto;              
+    max-width: 700px;         
+    display: block;           
+    margin: 0 auto;           
+    border-radius: 0.75rem;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.modalClose {
+    position: absolute;
+    top: 1.5rem;
+    right: 2rem;
+    color: #ffffff;
+    font-size: 2.25rem;
+    font-weight: bold;
+    cursor: pointer;
+    background: none;
+    border: none;
+    transition: color 0.3s ease;
+}
+
+.modalClose:hover {
+    color: #d1d5db;
+}
+
+@media (max-width: 950px) {
+    .container {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .right {
+        text-align: left;
+        width: 100%;
+    }
+
+    .extra {
+        flex-direction: column;
+    }
+}
+
+
+
+
+
+
+.sectionTitle {
+    font-size: 2.5rem;
+    font-weight: 800;
+    text-align: center;
+    color: #0F172A;
+    margin-bottom: 4rem;
+}
+
+.titleUnderline {
+    display: inline-block;
+    border-bottom: 4px solid #598AEB;
+    /* mismo estilo de barra que otras secciones */
+    padding-bottom: 0.5rem;
+}

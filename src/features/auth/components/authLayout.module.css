@@ -1,0 +1,250 @@
+/* ===== LAYOUT GENERAL (equivalente al <body> de tu HTML) ===== */
+.authPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: #f7f8fb;
+}
+
+/* Contenedor principal (equivalente a .container de tu HTML) */
+.container {
+  display: flex;
+  width: 90%;
+  max-width: 1200px;
+  background: transparent;
+  position: relative;
+}
+
+/* ===== ICONO DE CIERRE ===== */
+.closeIcon {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  z-index: 30;
+  transition: transform 0.3s ease;
+}
+
+.closeIconImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.closeIcon:hover {
+  transform: rotate(90deg);
+}
+
+/* ===== SECCIÓN IZQUIERDA ===== */
+.leftSection {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.illustration {
+  width: 100%;
+  max-width: 500px;
+  animation: float 4s ease-in-out infinite;
+}
+
+/* ===== SECCIÓN DERECHA (tarjeta azul) ===== */
+.rightSection {
+  flex: 1;
+  background-color: #15264f;
+  border-radius: 20px;
+  padding: 40px 50px;
+  position: relative;
+  overflow: hidden;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Contenedor del formulario / contenido */
+.formContainer {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* ===== HOJAS DECORATIVAS ===== */
+.leafWrapper {
+  position: absolute;
+  bottom: -25px;
+  right: -70px;
+  transform-origin: center bottom;
+  pointer-events: none;
+  animation: sway 5s ease-in-out infinite;
+}
+
+.leafBackWrapper {
+  z-index: 0;
+  right: -50px;
+  animation-delay: 0.4s;
+}
+
+.leafFrontWrapper {
+  z-index: 15;
+  right: -110px;
+  animation-delay: 1s;
+}
+
+.leafFront,
+.leafBack {
+  width: 180px;
+  height: auto;
+  animation: breathe 8s ease-in-out infinite;
+}
+
+/* Hoja trasera más pequeña y con menor opacidad */
+.leafBack {
+  width: 125px;
+  opacity: 0.45;
+}
+
+/* ===== ANIMACIONES ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes sway {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  25% {
+    transform: rotate(3deg) translateY(-1px);
+  }
+  50% {
+    transform: rotate(-3deg) translateY(1px);
+  }
+  75% {
+    transform: rotate(2deg) translateY(-1px);
+  }
+}
+
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 950px) {
+  .container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .leftSection {
+    display: none;
+  }
+
+  .rightSection {
+    width: 90%;
+    margin-top: 50px;
+  }
+}
+
+/* ========================================================= */
+/*  🔒 HEADER + TABS (equivalente a tu h2 + .tabs del HTML)
+/* ========================================================= */
+
+.header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.headerTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.headerBrand {
+  letter-spacing: 2px;
+  color: #3e71bf; /* igual que tu diseño original */
+}
+
+.headerSubtitle {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Contenedor de tabs (equivalente a .tabs de tu HTML) */
+.toggleTabs {
+  display: flex;
+  justify-content: center;
+  background-color: #0f1d3b;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 1.75rem;
+}
+
+/* Botones de tabs */
+.toggleTab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  padding: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.toggleTab.active {
+  background-color: #3e71bf;
+}
+
+.toggleTab:hover:not(.active) {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Overlay de carga para procesos async (login/register) */
+.loadingOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 50;
+}
+
+/* Suavizar aparición del contenido dentro del formContainer */
+.formContainer > * {
+  animation: fadeIn 0.3s ease-out;
+}

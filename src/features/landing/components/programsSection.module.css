@@ -1,0 +1,55 @@
+.programsSection {
+  padding: 5rem 0;
+  background-color: #f9fafb;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 800;
+  text-align: center;
+  color: #0F172A;
+  margin-bottom: 4rem;
+}
+
+.titleUnderline {
+  display: inline-block;
+  border-bottom: 4px solid #59EBBF;
+  padding-bottom: 0.5rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.viewMore {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.viewMoreLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #598AEB;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.viewMoreLink:hover {
+  opacity: 0.8;
+}

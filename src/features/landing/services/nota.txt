@@ -1,0 +1,13 @@
+el landingService.js actual esta haciendo uso de los datos de los
+mocks, cuando se cuente con los endpoints 
+borrar los if que obligan a usar los mocks:
+
+ejemplo:
+
+if (USE_MOCK) {
+      return { data: FALLBACK_DATA.reviews, error: null };
+    }
+
+if (USE_MOCK) {
+      return { data: FALLBACK_DATA.nextEvent, error: null };
+    }
