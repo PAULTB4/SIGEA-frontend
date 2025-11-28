@@ -5,10 +5,10 @@
 
 const API_CONFIG = {
   // URL base del backend - se obtiene de variables de entorno
-  BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:8080/api/v1',
+  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1',
   
   // Timeout para peticiones (en milisegundos)
-  TIMEOUT: parseInt(process.env.REACT_APP_API_TIMEOUT) || 30000,
+  TIMEOUT: parseInt(import.meta.env.VITE_API_TIMEOUT) || 30000,
   
   // Endpoints de autenticación
   AUTH_ENDPOINTS: {
@@ -53,8 +53,8 @@ const API_CONFIG = {
   },
   
   // Configuración de desarrollo
-  USE_MOCK_API: process.env.REACT_APP_USE_MOCK_API === 'true',
-  ENABLE_LOGS: process.env.REACT_APP_ENABLE_LOGS === 'true',
+  USE_MOCK_API: import.meta.env.VITE_USE_MOCK_API === 'true',
+  ENABLE_LOGS: import.meta.env.VITE_ENABLE_LOGS === 'true',
 };
 
 /**

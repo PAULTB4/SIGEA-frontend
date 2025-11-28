@@ -9,9 +9,9 @@ const COLORS = {
 };
 
 // API endpoint configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
-const USE_MOCK_API = process.env.REACT_APP_USE_MOCK_API !== 'false';
-
+// API endpoint configuration
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API !== 'false';
 /**
  * Generic data fetching hook with mock/real API support
  * @param {string} key - Data type key ('programs', 'certs', 'reviews')

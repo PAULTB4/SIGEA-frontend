@@ -1,7 +1,7 @@
 /* src/app/App.jsx */
 import React from 'react';
-import AppRouter from './AppRouter'; // (PascalCase)
-import { AuthProvider } from '../features/auth/hooks/useAuth'; // (Contiene useAuth.js)
+import AppRouter from './AppRouter';
+import { AuthProvider } from '../features/auth/hooks/useAuth';
 
 /**
  * Componente Raíz de la Aplicación

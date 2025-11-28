@@ -1,11 +1,4 @@
-/**
- * Mock Auth Service - Solo para Desarrollo
- * 
- * Este servicio simula respuestas del backend para desarrollo local.
- * NO debe ser usado en producción.
- * 
- * Para desactivar: Cambiar REACT_APP_USE_MOCK_API=false en .env
- */
+
 
 const MOCK_USERS = [
   {

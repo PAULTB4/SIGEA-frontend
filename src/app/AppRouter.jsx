@@ -93,7 +93,7 @@ function AppRouter() {
         />
 
         {/* Solo en desarrollo */}
-        {process.env.NODE_ENV === 'development' && (
+        {import.meta.env.MODE === 'development' && (
           <Route path="/design-system" element={<DesignSystemTest />} />
         )}
 

@@ -3,8 +3,8 @@ import authService from './authService';
 import { handleApiError, logError } from '../utils/errorHandler';
 import { normalizeResponse } from '../utils/apiHelpers';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
-const USE_MOCK_API = process.env.REACT_APP_USE_MOCK_API !== 'false';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const USE_MOCK_API =import.meta.env.VITE_USE_MOCK_API !== 'false';
 
 const activityService = {
   /**

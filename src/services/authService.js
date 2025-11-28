@@ -3,8 +3,8 @@ import { jwtDecode } from 'jwt-decode';
 import { handleApiError, logError } from '../utils/errorHandler';
 import { normalizeResponse } from '../utils/apiHelpers';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
-const USE_MOCK_API = process.env.NODE_ENV === 'development' && process.env.REACT_APP_USE_MOCK_API === 'true';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const USE_MOCK_API = import.meta.env.MODE === 'development' && import.meta.env.VITE_USE_MOCK_API === 'true';
 
 // Solo importar mockAuthService en desarrollo
 let mockAuthService = null;
