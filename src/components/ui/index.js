@@ -11,6 +11,7 @@ import { Skeleton } from '../../desingSystem/primitives/skeleton';
 import { Divider } from '../../desingSystem/primitives/divider';
 import { Icon } from '../../desingSystem/primitives/icon';
 import { Alert } from './Alert'; // Local import
+import PhoneInput from './PhoneInput'; // Local import
 
 import * as Tokens from '../../desingSystem/tokens'; 
 
@@ -27,5 +28,6 @@ export {
     Divider, 
     Icon, 
     Alert,
+    PhoneInput,  // ✅ Agregado aquí
     Tokens
 };

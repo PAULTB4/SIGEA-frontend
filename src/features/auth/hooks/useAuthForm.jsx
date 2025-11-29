@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './useAuth'; 
 import { handleApiError, logError } from '../../../utils/errorHandler';
+import authService from '../../../services/authService'; // ✅ Import correcto
 
 export const useAuthForm = () => {
   const navigate = useNavigate();
@@ -11,13 +12,13 @@ export const useAuthForm = () => {
   
   const { login: authLogin } = useAuth(); 
 
-  const login = async (email, password) => {
+  const login = async (email, password, rememberMe = false) => {
     setLoading(true);
     setError('');
     setSuccess('');
 
     try {
-      const result = await authLogin({ email, password });
+      const result = await authLogin({ email, password, rememberMe });
       
       if (result.success) {
         setSuccess('¡Sesión iniciada correctamente!');
@@ -57,25 +58,50 @@ export const useAuthForm = () => {
     setError('');
     setSuccess('');
     
+    // Validación de contraseñas
     if (formData.password !== formData.confirmPassword) {
       setError('Las contraseñas no coinciden.');
       setLoading(false);
       return { success: false };
     }
 
+   // Validación de teléfono (debe estar completo)
+if (!formData.telefono || formData.telefono.length < 8) {
+  setError('Ingresa un número de teléfono válido.');
+  setLoading(false);
+  return { success: false };
+}
+
+// Validación adicional: solo números en DNI
+if (!/^\d+$/.test(formData.dni)) {
+  setError('El DNI debe contener solo números.');
+  setLoading(false);
+  return { success: false };
+}
+
+// Validación de teléfono (debe estar completo)
+if (!formData.telefono || formData.telefono.length < 8) {
+  setError('Ingresa un número de teléfono válido.');
+  setLoading(false);
+  return { success: false };
+}
+
     try {
-      const authService = require('../../../services/authService').default;
+      // ✅ CORRECCIÓN: Ya no usamos require, usamos el import de arriba
       await authService.register(
-        formData.fullName,
+        formData.nombres,
+        formData.apellidos,
         formData.email,
         formData.dni,
+        formData.telefono,
+        formData.extensionTelefonica,
         formData.password
       );
       
       setSuccess('Cuenta creada. Iniciando sesión...');
       
       const loginResult = await authLogin(
-        { email: formData.email, password: formData.password }
+        { email: formData.email, password: formData.password, rememberMe: false }
       );
       
       if (loginResult.success) {

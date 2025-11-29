@@ -9,7 +9,8 @@ export const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
+    rememberMe: false
   });
 
   const handleInputChange = (e) => {
@@ -18,9 +19,14 @@ export const LoginForm = () => {
     clearMessages();
   };
 
+  const handleCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: checked }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(formData.email, formData.password);
+    await login(formData.email, formData.password, formData.rememberMe);
   };
 
   return (
@@ -59,7 +65,18 @@ export const LoginForm = () => {
         }
       />
 
-      <div className={styles.forgotPassword}>
+      <div className={styles.rememberMeContainer}>
+        <label className={styles.checkboxLabel}>
+          <input
+            type="checkbox"
+            name="rememberMe"
+            checked={formData.rememberMe}
+            onChange={handleCheckboxChange}
+            className={styles.checkbox}
+          />
+          <span>Mantener sesión iniciada</span>
+        </label>
+
         <button
           type="button"
           onClick={() => window.location.href = '/auth?view=recovery'}

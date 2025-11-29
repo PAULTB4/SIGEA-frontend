@@ -114,3 +114,94 @@
 .form :global(label) {
   color: #e8eaee !important;
 }
+
+.rememberMeContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: -0.5rem 0 0.5rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+.checkboxLabel:hover {
+  color: var(--text-primary);
+}
+
+/* Ajuste para el enlace de contraseña olvidada */
+.forgotPassword {
+  display: flex;
+  justify-content: flex-end;
+  margin: -0.5rem 0 0.5rem;
+}
+
+.forgotPasswordLink {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: 0.875rem;
+  text-decoration: none;
+  padding: 0;
+}
+
+.forgotPasswordLink:hover {
+  text-decoration: underline;
+}
+
+.rememberMeContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: -0.5rem 0 0.5rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+.checkboxLabel:hover {
+  color: var(--text-primary);
+}
+
+.forgotPasswordLink {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: 0.875rem;
+  text-decoration: none;
+  padding: 0;
+}
+
+.forgotPasswordLink:hover {
+  text-decoration: underline;
+}

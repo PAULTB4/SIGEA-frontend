@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuthForm } from '../hooks/useAuthForm';
-import { Input, Button, Alert } from '../../../components/ui';
+import { Input, Button, Alert, PhoneInput } from '../../../components/ui';
 import styles from './authForms.module.css';
 
 export const RegisterForm = () => {
@@ -9,18 +9,104 @@ export const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: '',
+    nombres: '',
+    apellidos: '',
     email: '',
     dni: '',
+    telefono: '',
+    extensionTelefonica: '+51',
     password: '',
     confirmPassword: ''
   });
 
+  const [fieldErrors, setFieldErrors] = useState({
+  dni: '',
+  telefono: ''
+});
+
+const [selectedCountry, setSelectedCountry] = useState({ 
+  phoneLength: 9, 
+  prefix: ['9'],
+  name: 'Perú' 
+});
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const { name, value } = e.target;
+  
+  // Validación DNI: solo números
+  if (name === 'dni') {
+    const numericValue = value.replace(/\D/g, '');
+    setFormData(prev => ({ ...prev, [name]: numericValue }));
+    
+    if (numericValue.length > 0 && numericValue.length !== 8) {
+      setFieldErrors(prev => ({ ...prev, dni: 'El DNI debe tener 8 dígitos' }));
+    } else {
+      setFieldErrors(prev => ({ ...prev, dni: '' }));
+    }
+  } else {
     setFormData(prev => ({ ...prev, [name]: value }));
-    clearMessages();
-  };
+  }
+  
+  clearMessages();
+};
+
+const handlePhoneChange = (e, country) => {
+  const phoneValue = e.target.value;
+  setFormData(prev => ({ ...prev, telefono: phoneValue }));
+  
+  // Validar longitud
+  if (phoneValue.length > 0 && phoneValue.length !== country.phoneLength) {
+    setFieldErrors(prev => ({ 
+      ...prev, 
+      telefono: `El teléfono de ${country.name} debe tener ${country.phoneLength} dígitos` 
+    }));
+    return;
+  }
+  
+  // Validación especial para Perú: debe empezar con 9
+  if (country.prefix && phoneValue.length === country.phoneLength) {
+    const startsWithValidPrefix = country.prefix.some(p => phoneValue.startsWith(p));
+    if (!startsWithValidPrefix) {
+      setFieldErrors(prev => ({ 
+        ...prev, 
+        telefono: `El teléfono de ${country.name} debe empezar con ${country.prefix.join(' o ')}` 
+      }));
+      return;
+    }
+  }
+  
+  // Si todo es válido
+  setFieldErrors(prev => ({ ...prev, telefono: '' }));
+  clearMessages();
+};
+
+const handleCountryChange = (country) => {
+  setSelectedCountry(country);
+  setFormData(prev => ({ ...prev, extensionTelefonica: country.dialCode }));
+  
+  // Revalidar teléfono con nuevo país
+  const phoneValue = formData.telefono;
+  if (phoneValue.length > 0) {
+    if (phoneValue.length !== country.phoneLength) {
+      setFieldErrors(prev => ({ 
+        ...prev, 
+        telefono: `El teléfono de ${country.name} debe tener ${country.phoneLength} dígitos` 
+      }));
+    } else if (country.prefix) {
+      const startsWithValidPrefix = country.prefix.some(p => phoneValue.startsWith(p));
+      if (!startsWithValidPrefix) {
+        setFieldErrors(prev => ({ 
+          ...prev, 
+          telefono: `El teléfono de ${country.name} debe empezar con ${country.prefix.join(' o ')}` 
+        }));
+      } else {
+        setFieldErrors(prev => ({ ...prev, telefono: '' }));
+      }
+    } else {
+      setFieldErrors(prev => ({ ...prev, telefono: '' }));
+    }
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,12 +120,23 @@ export const RegisterForm = () => {
 
       <div className={styles.fieldGroup}>
         <Input
-          label="Nombre Completo"
+          label="Nombres"
           type="text"
-          name="fullName"
-          value={formData.fullName}
+          name="nombres"
+          value={formData.nombres}
           onChange={handleInputChange}
-          placeholder="Juan García Pérez"
+          placeholder="Juan Carlos"
+          required
+          fullWidth
+        />
+
+        <Input
+          label="Apellidos"
+          type="text"
+          name="apellidos"
+          value={formData.apellidos}
+          onChange={handleInputChange}
+          placeholder="García Pérez"
           required
           fullWidth
         />
@@ -50,10 +147,11 @@ export const RegisterForm = () => {
           name="dni"
           value={formData.dni}
           onChange={handleInputChange}
-          placeholder="12345678"
+          placeholder="73245678"
           required
           maxLength={8}
           fullWidth
+          error={fieldErrors.dni}  // ← AGREGAR
         />
 
         <Input
@@ -67,6 +165,24 @@ export const RegisterForm = () => {
           fullWidth
         />
 
+        <PhoneInput
+  label="Teléfono"
+  name="telefono"
+  value={formData.telefono}
+  onChange={(e) => handlePhoneChange(e, selectedCountry)}  // ← CAMBIAR
+  onCountryChange={handleCountryChange}
+  defaultCountry="PE"
+  required
+  fullWidth
+  error={fieldErrors.telefono}  // ← AGREGAR
+  helperText={!fieldErrors.telefono && selectedCountry.prefix 
+    ? `Debe empezar con ${selectedCountry.prefix.join(' o ')}` 
+    : !fieldErrors.telefono 
+    ? "Ingresa tu número de teléfono sin el código de país" 
+    : undefined
+  }  // ← CAMBIAR
+/>
+
         <Input
           label="Contraseña"
           type={showPassword ? 'text' : 'password'}
@@ -76,6 +192,7 @@ export const RegisterForm = () => {
           placeholder="••••••••"
           required
           fullWidth
+          helperText="Mínimo 8 caracteres"
           rightIcon={
             <button
               type="button"
