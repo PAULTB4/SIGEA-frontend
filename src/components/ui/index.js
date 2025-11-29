@@ -28,6 +28,6 @@ export {
     Divider, 
     Icon, 
     Alert,
-    PhoneInput,  // ✅ Agregado aquí
+    PhoneInput,  
     Tokens
 };

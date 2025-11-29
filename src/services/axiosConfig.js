@@ -169,7 +169,7 @@ apiClient.interceptors.response.use(
       console.error('Acceso prohibido:', error.response?.data?.message);
     }
     
-    return Promise.reject(error);
+    return error;
   }
 );
 

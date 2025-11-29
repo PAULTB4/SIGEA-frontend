@@ -26,6 +26,14 @@ const authService = {
           password: password,
           mantenerSesion: rememberMe
         });
+        
+// 🔥 Manejo seguro cuando viene error en lugar de response
+if (!apiResponse || !apiResponse.headers) {
+  throw new Error(
+    apiResponse?.response?.data?.message ||
+    'Error al iniciar sesión'
+  );
+}
 
         const newToken = apiResponse.headers['x-new-token'];
         if (newToken) {
@@ -112,11 +120,16 @@ const authService = {
         }
       };
     } catch (error) {
-      logError(error, 'authService.login');
-      
-      const errorInfo = handleApiError(error);
-      throw new Error(errorInfo.message || 'Error al iniciar sesión');
-    }
+  logError(error, 'authService.login');
+
+  const errorInfo = handleApiError(error);
+
+  return {
+    success: false,
+    error: errorInfo.message || 'Error al iniciar sesión'
+  };
+}
+
   },
 
   register: async (nombres, apellidos, email, dni, telefono, extensionTelefonica, password) => {

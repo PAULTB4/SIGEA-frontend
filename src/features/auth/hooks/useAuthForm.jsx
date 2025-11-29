@@ -13,45 +13,54 @@ export const useAuthForm = () => {
   const { login: authLogin } = useAuth(); 
 
   const login = async (email, password, rememberMe = false) => {
-    setLoading(true);
-    setError('');
-    setSuccess('');
+  setLoading(true);
+  setError(null);
+  setSuccess(null);
 
-    try {
-      const result = await authLogin({ email, password, rememberMe });
-      
-      if (result.success) {
-        setSuccess('¡Sesión iniciada correctamente!');
-        
-        setTimeout(() => {
-          const redirectPath = result.role === 'organizador' || result.role === 'admin'
-            ? '/organizer/dashboard'
-            : '/participant/dashboard';
-          
-          navigate(redirectPath, { replace: true });
-        }, 500);
-        
-        return { success: true };
-      }
-    } catch (err) {
-      logError(err, 'useAuthForm.login');
-      
-      let errorMessage = 'Error al iniciar sesión';
-      
-      if (typeof err === 'string') {
-        errorMessage = err;
-      } else if (err?.message) {
-        errorMessage = err.message;
-      } else if (err?.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      }
-      
-      setError(errorMessage);
-      return { success: false };
-    } finally {
-      setLoading(false);
+  try {
+    const result = await authLogin({ email, password, rememberMe });
+
+// ⬅️ SI EL LOGIN FALLA
+if (!result || !result.success) {
+  const errorMessage = result?.error || 'Credenciales incorrectas';
+  setError(errorMessage);
+
+  return { success: false, error: errorMessage };
+}
+
+// ⬅️ SI EL LOGIN ES EXITOSO
+setSuccess('¡Sesión iniciada correctamente!');
+
+setTimeout(() => {
+  const redirectPath =
+    result.role === 'organizador' || result.role === 'admin'
+      ? '/organizer/dashboard'
+      : '/participant/dashboard';
+
+  navigate(redirectPath, { replace: true });
+}, 500);
+
+return { success: true };
+
+  } catch (err) {
+    logError(err, 'useAuthForm.login');
+    
+    let errorMessage = 'Error al iniciar sesión';
+    
+    if (typeof err === 'string') {
+      errorMessage = err;
+    } else if (err?.message) {
+      errorMessage = err.message;
+    } else if (err?.response?.data?.message) {
+      errorMessage = err.response.data.message;
     }
-  };
+    
+    setError(errorMessage);
+    return { success: false, error: errorMessage };  // ← AGREGAR error aquí
+  } finally {
+    setLoading(false);
+  }
+};
 
   const register = async (formData) => {
     setLoading(true);
