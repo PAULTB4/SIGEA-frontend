@@ -1,0 +1,136 @@
+.container {
+  width: 100%;
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0F172A; /* text.primary */
+  margin-bottom: 0.5rem;
+}
+
+.dropZone {
+  position: relative;
+  border: 2px dashed #D4D4D8; /* neutral-300 */
+  border-radius: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #FFFFFF;
+}
+
+.dropZoneActive {
+  border-color: #598AEB; /* brand.primary */
+  background-color: rgba(89, 138, 235, 0.05);
+}
+
+.dropZoneError {
+  border-color: #EF4444; /* semantic.error */
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.uploadIcon {
+  margin: 0 auto 0.75rem auto;
+  height: 2.5rem;
+  width: 2.5rem;
+  color: #598AEB;
+}
+
+.uploadIconError {
+  color: #EF4444;
+}
+
+.uploadText {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #0F172A;
+}
+
+.uploadLink {
+  color: #598AEB;
+  text-decoration: none;
+}
+
+.uploadLink:hover {
+  text-decoration: underline;
+}
+
+.uploadSubtext {
+  font-size: 0.75rem;
+  color: #71717A; /* neutral-500 */
+  margin-top: 0.25rem;
+}
+
+/* File Card Preview */
+.fileCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: #FAFAFA; /* neutral-50 */
+  border: 1px solid #E4E4E7; /* neutral-200 */
+  border-radius: 0.75rem;
+}
+
+.fileInfoContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  overflow: hidden;
+}
+
+.iconWrapper {
+  padding: 0.5rem;
+  background-color: #FFFFFF;
+  border-radius: 0.5rem;
+  border: 1px solid #F4F4F5;
+}
+
+.fileIconImage { color: #59C87B; height: 1.5rem; width: 1.5rem; }
+.fileIconDoc { color: #598AEB; height: 1.5rem; width: 1.5rem; }
+
+.fileDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.fileName {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fileSize {
+  font-size: 0.75rem;
+  color: #71717A;
+}
+
+.removeButton {
+  padding: 0.5rem;
+  color: #A1A1AA;
+  border-radius: 0.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.removeButton:hover {
+  color: #EF4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* Error Message */
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #EF4444;
+}

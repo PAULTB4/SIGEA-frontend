@@ -1,0 +1,360 @@
+/* === CARD GENÉRICA (programa/evento) === */
+
+.card {
+  background-color: #FFFFFF;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border-top: 8px solid #59C87B;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: none;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+/* Flyer en la card */
+.cardImageWrapper {
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.cardImage {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: 0.5rem;
+}
+
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cardIcon {
+  color: #598AEB;
+}
+
+.cardTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin-top: 0.25rem;
+}
+
+.cardDescription {
+  font-size: 0.9rem;
+  color: #0F172A;
+  margin-top: 0.15rem;
+  line-height: 1.5;
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.75rem;
+  margin-top: 0.4rem;
+}
+
+.cardMetaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  color: #6B7280;
+}
+
+/* Skeleton loading */
+
+.loadingCard {
+  background-color: #FFFFFF;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid #E5E7EB;
+  height: 10rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.loadingIcon {
+  width: 3rem;
+  height: 3rem;
+  background-color: #E5E7EB;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+
+.loadingLine {
+  width: 75%;
+  height: 1rem;
+  background-color: #E5E7EB;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.loadingLineShort {
+  width: 50%;
+  height: 1rem;
+  background-color: #E5E7EB;
+  border-radius: 0.25rem;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* === MODAL DE DETALLES === */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.65);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.modal {
+  background-color: #FFFFFF;
+  border-radius: 1rem;
+  max-width: 960px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.5);
+}
+
+.modalClose {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: #F3F4F6;
+  border-radius: 999px;
+  border: none;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #4B5563;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.modalClose:hover {
+  background: #E5E7EB;
+  transform: scale(1.05);
+}
+
+.modalLayout {
+  display: grid;
+  grid-template-columns: 1.1fr 1.4fr;
+  gap: 1.75rem;
+  padding: 2.25rem 2rem 2rem;
+}
+
+@media (max-width: 900px) {
+  .modalLayout {
+    grid-template-columns: 1fr;
+    padding: 2.25rem 1.5rem 1.75rem;
+  }
+}
+
+.modalImageWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.modalImage {
+  width: 100%;
+  max-width: 380px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 0.75rem;
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.35);
+}
+
+.modalBody {
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.modalTitle {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 0.3rem;
+}
+
+.modalSubtitle {
+  font-size: 0.98rem;
+  color: #4B5563;
+  margin-bottom: 0.75rem;
+}
+
+.modalMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.modalMetaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #4B5563;
+}
+
+.certificateBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: #ECFDF5;
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+  color: #166534;
+  margin-bottom: 0.75rem;
+}
+
+.modalDescription {
+  font-size: 0.95rem;
+  color: #111827;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+/* Tabs dentro del modal */
+
+.modalTabsWrapper {
+  margin-top: 0.5rem;
+}
+
+.modalTabs {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 0.15rem;
+  background-color: #F3F4F6;
+  margin-bottom: 0.75rem;
+}
+
+.tabButton {
+  border: none;
+  background: transparent;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4B5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tabButtonActive {
+  background-color: #598AEB;
+  color: #FFFFFF;
+}
+
+.tabContentActive {
+  background-color: #F9FAFB;
+  border-radius: 0.75rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #E5E7EB;
+}
+
+.tabTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.tabList {
+  list-style: disc;
+  margin-left: 1.25rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #111827;
+  line-height: 1.5;
+}
+
+.priceText {
+  font-size: 0.9rem;
+  color: #111827;
+  font-weight: 600;
+}
+
+
+.imageModalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+/* CONTENEDOR DEL MODAL: que se ajuste al contenido */
+.imageModal {
+  position: relative;
+  display: inline-block;  /* se ajusta al ancho de la imagen */
+  max-width: 1000px;
+  width: auto;            /* importante: quitar el 100% */
+  height: auto;
+}
+
+/* IMAGEN: manda el ancho dentro del modal */
+.imageModalImage {
+  display: block;
+  max-width: 100%;        /* no se sale del contenedor */
+  height: auto;
+  object-fit: contain;
+  border-radius: 0.75rem;
+  margin: 0 auto;
+  box-shadow: 0 25px 50px -12px rgba(35, 73, 145, 0.9);
+}
+
+.imageModalClose {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: #f3f4f6;
+  border-radius: 999px;
+  border: none;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #111827;
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.imageModalClose:hover {
+  background: #e5e7eb;
+  transform: scale(1.05);
+}
+
+.modalImageWrapper {
+  cursor: zoom-in;
+}

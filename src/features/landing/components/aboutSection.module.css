@@ -1,0 +1,47 @@
+.aboutSection {
+  padding: 5rem 0;
+  background-color: #f9fafb;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #598AEB;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: 3rem;
+  }
+}
+
+.description {
+  font-size: 1.125rem;
+  color: #0F172A;
+  line-height: 1.75;
+  text-align: center;
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .description {
+    font-size: 1.25rem;
+  }
+}
+
+.highlight {
+  color: #598AEB;
+}
+
+.highlightSecondary {
+  color: #59C87B;
+}

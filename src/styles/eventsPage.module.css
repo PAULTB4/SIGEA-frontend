@@ -1,0 +1,62 @@
+/* src/pages/eventsPage.module.css */
+
+.page {
+  min-height: 100vh;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+}
+
+/* Encabezado propio de la página de eventos */
+.hero {
+  padding-top: 7rem; /* espacio por el header fijo */
+  padding-bottom: 3rem;
+  background: #ffffff;
+}
+
+.heroContainer {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.heroKicker {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #598aeb;
+  margin-bottom: 0.5rem;
+}
+
+.heroTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .heroTitle {
+    font-size: 2.5rem;
+  }
+}
+
+.heroSubtitle {
+  font-size: 1rem;
+  color: #4b5563;
+  max-width: 40rem;
+  line-height: 1.6;
+}
+
+.errorText {
+  max-width: 1280px;
+  margin: 1rem auto 3rem;
+  padding: 0 1.5rem;
+  color: #b91c1c;
+  font-size: 0.95rem;
+}
