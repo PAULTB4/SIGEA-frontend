@@ -53,37 +53,44 @@ export const AuthProvider = ({ children }) => {
     checkUserSession();
   }, []);
 
-  const login = async (credentials) => {
-    try {
-      setLoading(true);
-      
-      const response = await authService.login(
-        credentials.email, 
-        credentials.password
-      );
-      
-      const userData = {
-        email: response.user.email,
-        role: response.user.role,
-        token: response.token
-      };
+ const login = async (credentials) => {
+  try {
+    setLoading(true);
+    
+    const response = await authService.login(
+      credentials.email, 
+      credentials.password
+    );
+    
+    console.log('Response del authService:', response); // Debug
+    
+    // ✅ IMPORTANTE: NO incluir el token en userData
+    const userData = {
+      email: response.user.email,
+      role: response.user.role
+      // ❌ NO incluir: token: response.token
+    };
 
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('authToken', response.token);
-      localStorage.setItem('userRole', userData.role);
-      localStorage.setItem('userEmail', userData.email);
-      localStorage.setItem('tokenTimestamp', Date.now().toString());
-      
-      setUser(userData);
+    // Guardar en localStorage (el authService ya guardó el token)
+    localStorage.setItem('user', JSON.stringify(userData));
+    // El authService ya hizo esto, pero por seguridad lo repetimos:
+    localStorage.setItem('authToken', response.token);
+    localStorage.setItem('userRole', userData.role);
+    localStorage.setItem('userEmail', userData.email);
+    localStorage.setItem('tokenTimestamp', Date.now().toString());
+    
+    console.log('Usuario guardado:', userData); // Debug
+    
+    setUser(userData);
 
-      return { success: true, role: userData.role };
-    } catch (error) {
-      console.error('Error en login:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
+    return { success: true, role: userData.role };
+  } catch (error) {
+    console.error('Error en login:', error);
+    throw error;
+  } finally {
+    setLoading(false);
+  }
+};
 
   const logout = () => {
     authService.logout();

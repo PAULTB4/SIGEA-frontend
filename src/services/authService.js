@@ -13,7 +13,7 @@ if (USE_MOCK_API) {
 }
 
 const authService = {
-  login: async (email, password) => {
+  login: async (email, password, rememberMe = false) => {
     try {
       let response;
 
@@ -22,37 +22,68 @@ const authService = {
       } else {
         // ✅ CORREGIDO: URL completa y campos correctos
         const apiResponse = await apiClient.post(`${API_BASE_URL}/usuarios/auth/login`, {
-          correo: email,  // ✅ Mapear email a correo
-          password: password
+          correo: email,
+          password: password,
+          rememberMe: rememberMe
         });
+
+        const newToken = apiResponse.headers['x-new-token'];
+        if (newToken) {
+          sessionStorage.setItem("accessToken", newToken);
+        }
         
         // ✅ CORREGIDO: Adaptar respuesta del backend SIGEA
-        // Respuesta del backend: { status: true, message: "...", extraData: { tokenUsuario: "..." } }
         const backendData = apiResponse.data;
         
         if (!backendData.status) {
           throw new Error(backendData.message || 'Error al iniciar sesión');
         }
         
-        const token = backendData.extraData?.tokenUsuario;
+        // ✅ FIX: Usar Access_Token (guion bajo, no guión)
+        const token = backendData.extraData?.accessToken || 
+                      backendData.extraData?.tokenUsuario || 
+                      backendData.token;
         
         if (!token) {
           throw new Error('No se recibió token de autenticación');
         }
         
+        // ✅ Guardar refresh token si existe
+        const refreshToken = backendData.extraData?.Refresh_Token;
+        if (refreshToken) {
+          localStorage.setItem('refreshToken', refreshToken);
+        }
+        
         // Intentar obtener el rol desde el token JWT
-        let userRole = 'participante'; // valor por defecto
+        let userRole = 'participante';
+        let userId = null;
+        
         try {
           const decoded = jwtDecode(token);
-          userRole = decoded.role || decoded.rol || 'participante';
+          console.log('Token decodificado:', decoded);
+          
+          userId = decoded.usuarioId || decoded.sub;
+          
+          // El backend SIGEA envía el rol en un array 'roles'
+          if (decoded.roles && Array.isArray(decoded.roles) && decoded.roles.length > 0) {
+            userRole = decoded.roles[0];
+          } else {
+            userRole = decoded.role || decoded.rol || 'participante';
+          }
+          
+          // Normalizar a minúsculas
+          userRole = userRole.toLowerCase();
+          
+          console.log('Rol extraído del token:', userRole);
         } catch (error) {
-          console.warn('No se pudo decodificar el rol del token, usando valor por defecto');
+          console.warn('No se pudo decodificar el rol del token:', error);
         }
         
         // Crear respuesta normalizada para el frontend
         response = {
           token: token,
           user: {
+            id: userId,
             email: email,
             role: userRole
           },
@@ -196,6 +227,7 @@ const authService = {
     localStorage.removeItem('userEmail');
     localStorage.removeItem('tokenTimestamp');
     localStorage.removeItem('user');
+    localStorage.removeItem('refreshToken');
   },
 
   getToken: () => {

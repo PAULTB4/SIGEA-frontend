@@ -1,7 +1,8 @@
 /* src/features/dashboard/components/Sidebar.jsx */
-import React from 'react';
+import React, { useState } from 'react';
 import { BookOpen, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import apiClient from '../../../services/axiosConfig';
 import styles from './sidebar.module.css';
 
 const COLORS = {
@@ -23,6 +24,36 @@ const Sidebar = ({
   onLogout,
 }) => {
   const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      
+      // Obtener el token
+      const token = localStorage.getItem('authToken');
+      
+      if (token) {
+        // Llamar al endpoint de logout del backend
+        await apiClient.post('/usuarios/logout', null, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      }
+      
+      // Ejecutar el logout local (limpia localStorage)
+      onLogout();
+      
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      
+      // Aunque falle el backend, igual limpiamos la sesión local
+      onLogout();
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <aside className={styles.aside}>
@@ -77,9 +108,13 @@ const Sidebar = ({
           <p className={styles.userEmail}>{userEmail || 'Usuario'}</p>
         </div>
 
-        <button onClick={onLogout} className={styles.logoutButton}>
+        <button 
+          onClick={handleLogout} 
+          className={styles.logoutButton}
+          disabled={isLoggingOut}
+        >
           <LogOut size={16} />
-          Cerrar Sesión
+          {isLoggingOut ? 'Cerrando sesión...' : 'Cerrar Sesión'}
         </button>
       </div>
     </aside>

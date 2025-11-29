@@ -16,7 +16,8 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
-  timeout: API_CONFIG.TIMEOUT
+  timeout: API_CONFIG.TIMEOUT,
+  withCredentials: true  // ✅ AGREGAR ESTA LÍNEA
 });
 
 let isRefreshing = false;
