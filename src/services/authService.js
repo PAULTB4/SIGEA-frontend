@@ -133,58 +133,69 @@ if (!apiResponse || !apiResponse.headers) {
   },
 
   register: async (nombres, apellidos, email, dni, telefono, extensionTelefonica, password) => {
-    try {
-      let response;
+  try {
+    let response;
 
-      if (USE_MOCK_API && mockAuthService) {
-        response = await mockAuthService.mockRegister(nombres, apellidos, email, dni, password);
-      } else {
-        try {
-          // ✅ Endpoint correcto para registro de participante
-          const apiResponse = await apiClient.post(`${API_BASE_URL}/usuarios/participante/registrar`, {
-            nombres,
-            apellidos,
-            correo: email,
-            password,
-            dni,
-            telefono,
-            extensionTelefonica
-          });
-          
-          const backendData = apiResponse.data;
-          
-          // El registro exitoso no devuelve token, necesitamos hacer login después
+    if (USE_MOCK_API && mockAuthService) {
+      response = await mockAuthService.mockRegister(nombres, apellidos, email, dni, password);
+    } else {
+      try {
+        // ✅ Endpoint correcto para registro de participante
+        const apiResponse = await apiClient.post(`${API_BASE_URL}/usuarios/participante/registrar`, {
+          nombres,
+          apellidos,
+          correo: email,
+          password,
+          dni,
+          telefono,
+          extensionTelefonica
+        });
+        
+        const backendData = apiResponse.data;
+        
+        // El registro exitoso no devuelve token, necesitamos hacer login después
+        response = {
+          success: true,
+          message: backendData.message || 'Registro exitoso'
+        };
+      } catch (error) {
+        // ✅ FIX CRÍTICO: El backend envía código 400 pero con mensaje de éxito
+        const errorResponse = error?.response?.data;
+        const errorMessage = errorResponse?.message || '';
+        
+        console.log('🔍 Error response:', errorResponse);
+        console.log('🔍 Error message:', errorMessage);
+        
+        if (errorMessage.toLowerCase().includes('registrado con exito') || 
+            errorMessage.toLowerCase().includes('registrado con éxito')) {
+          // Es un registro exitoso a pesar del código 400
+          console.log('✅ Registro exitoso (código 400 con mensaje de éxito)');
           response = {
             success: true,
-            message: backendData.message || 'Registro exitoso'
+            message: errorMessage
           };
-        } catch (error) {
-          // ✅ FIX CRÍTICO: El backend envía código 400 pero con mensaje de éxito
-          // Verificamos si el mensaje indica éxito a pesar del código HTTP de error
-          const errorMessage = error?.response?.data?.message || '';
-          
-          if (errorMessage.toLowerCase().includes('registrado con exito') || 
-              errorMessage.toLowerCase().includes('registrado con éxito')) {
-            // Es un registro exitoso a pesar del código 400
-            console.log('✅ Registro exitoso (código 400 con mensaje de éxito)');
-            response = {
-              success: true,
-              message: errorMessage
-            };
-          } else {
-            // Es un error real de registro
-            throw error;
-          }
+        } else {
+          // Es un error real de registro
+          console.error('❌ Error real en registro:', errorMessage);
+          throw error;
         }
       }
-
-      return response;
-    } catch (error) {
-      logError(error, 'authService.register');
-      const errorInfo = handleApiError(error);
-      throw { message: errorInfo.message };
     }
-  },
+
+    return response;
+  } catch (error) {
+    logError(error, 'authService.register');
+    
+    // ✅ MANEJO SEGURO DE ERRORES
+    const errorInfo = handleApiError(error);
+    const errorMessage = errorInfo?.message || 
+                        error?.response?.data?.message || 
+                        error?.message || 
+                        'Error en el registro';
+    
+    throw { message: errorMessage };
+  }
+},
 
   verifyDNI: async (dni) => {
     try {
