@@ -218,3 +218,38 @@
     font-size: 20px;
   }
 }
+
+/* Agregar estos estilos al archivo emailVerification.module.css existente */
+
+.warningContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+}
+
+.warningContent svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #f59e0b;
+}
+
+.warningContent strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #92400e;
+}
+
+.warningContent p {
+  margin: 0;
+  font-size: 13px;
+  color: #78350f;
+}
+
+.errorText {
+  text-align: center;
+  font-size: 14px;
+  color: #ef4444;
+  margin: 8px 0 0;
+  font-weight: 600;
+}

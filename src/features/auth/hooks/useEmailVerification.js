@@ -14,6 +14,7 @@ export const useEmailVerification = () => {
   const [attempts, setAttempts] = useState(0);
   const [canResend, setCanResend] = useState(false);
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutos en segundos
+  const [sendError, setSendError] = useState(false); // ✅ NUEVO: Detectar errores de envío
   
   const timerRef = useRef(null);
   const MAX_ATTEMPTS = 3;
@@ -54,6 +55,7 @@ export const useEmailVerification = () => {
     setLoading(true);
     setError('');
     setSuccess('');
+    setSendError(false); // ✅ NUEVO: Reset error de envío
 
     try {
       const result = await authService.sendVerificationCode(email, nombres);
@@ -66,8 +68,20 @@ export const useEmailVerification = () => {
       return { success: true };
     } catch (err) {
       logError(err, 'useEmailVerification.sendCode');
-      setError(err.message || 'Error al enviar código');
-      return { success: false, error: err.message };
+      
+      // ✅ NUEVO: Mejor manejo de errores de envío
+      const errorMessage = err.message || 'Error al enviar código';
+      
+      if (errorMessage.toLowerCase().includes('correo') || 
+          errorMessage.toLowerCase().includes('email') ||
+          errorMessage.toLowerCase().includes('dominio')) {
+        setError('No se pudo enviar el código a este correo. Verifica que el correo sea válido o intenta con otro.');
+        setSendError(true);
+      } else {
+        setError(errorMessage);
+      }
+      
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -128,7 +142,9 @@ export const useEmailVerification = () => {
       }
       
       setError(errorMessage);
-      return { success: false, error: errorMessage };
+      
+      // ✅ CRÍTICO: NO cerrar el modal, solo mostrar error
+      return { success: false, error: errorMessage, shouldStayOpen: true };
     } finally {
       setLoading(false);
     }
@@ -174,6 +190,7 @@ export const useEmailVerification = () => {
     setAttempts(0);
     setTimeLeft(RESEND_COOLDOWN);
     setCanResend(false);
+    setSendError(false);
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
@@ -189,6 +206,7 @@ export const useEmailVerification = () => {
     canResend,
     timeLeft,
     maxAttempts: MAX_ATTEMPTS,
+    sendError, // ✅ NUEVO: Flag de error de envío
     
     // Funciones
     sendCode,

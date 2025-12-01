@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { Mail, Clock, RefreshCw } from 'lucide-react';
+import { Mail, Clock, RefreshCw, AlertCircle } from 'lucide-react';
 import { Button, Alert } from '../../../../components/ui';
 import { CodeInput } from '../../../../components/ui/CodeInput';
-import { useEmailVerification } from '../../hooks/useEmailVerification';
+import useEmailVerification from '../../hooks/useEmailVerification';
 import styles from './emailVerification.module.css';
 
 /**
@@ -24,6 +24,7 @@ export const EmailVerificationModal = ({
     timeLeft,
     attempts,
     maxAttempts,
+    sendError,
     sendCode,
     validateCode,
     resendCode,
@@ -42,16 +43,35 @@ export const EmailVerificationModal = ({
     
     const result = await validateCode(email, code);
     
+    // ✅ CRÍTICO: Solo cerrar si fue exitoso
     if (result.success) {
       // Esperar un momento para que el usuario vea el mensaje de éxito
       setTimeout(() => {
         onVerificationSuccess();
       }, 1500);
     }
+    // ✅ NO hacer nada si falló, solo mostrar el error
   };
 
   const handleResend = async () => {
     await resendCode(email, nombres);
+  };
+
+  // ✅ NUEVO: Prevenir cierre si hay error de envío
+  const handleClose = () => {
+    if (sendError) {
+      // Si hubo error enviando el código, permitir cerrar
+      onClose();
+    } else {
+      // Si el código se envió bien, confirmar antes de cerrar
+      const confirmed = window.confirm(
+        '¿Estás seguro de que quieres salir sin verificar tu correo? ' +
+        'No podrás acceder al sistema hasta que lo verifiques.'
+      );
+      if (confirmed) {
+        onClose();
+      }
+    }
   };
 
   return (
@@ -83,6 +103,19 @@ export const EmailVerificationModal = ({
             </Alert>
           )}
 
+          {/* ✅ NUEVO: Advertencia si hubo error enviando */}
+          {sendError && (
+            <Alert variant="warning" className={styles.alert}>
+              <div className={styles.warningContent}>
+                <AlertCircle size={20} />
+                <div>
+                  <strong>No se pudo enviar el código</strong>
+                  <p>Verifica que tu correo sea válido o intenta con otro correo.</p>
+                </div>
+              </div>
+            </Alert>
+          )}
+
           <div className={styles.inputSection}>
             <label className={styles.label}>
               Ingresa el código de 6 dígitos
@@ -90,39 +123,47 @@ export const EmailVerificationModal = ({
             <CodeInput
               value={code}
               onChange={handleCodeChange}
-              disabled={loading || attempts >= maxAttempts}
+              disabled={loading || attempts >= maxAttempts || sendError}
               error={!!error}
-              autoFocus
+              autoFocus={!sendError}
             />
             
-            {attemptsLeft > 0 && attemptsLeft < maxAttempts && (
+            {attemptsLeft > 0 && attemptsLeft < maxAttempts && !sendError && (
               <p className={styles.attemptsText}>
                 {attemptsLeft} {attemptsLeft === 1 ? 'intento restante' : 'intentos restantes'}
+              </p>
+            )}
+
+            {attempts >= maxAttempts && (
+              <p className={styles.errorText}>
+                Has alcanzado el máximo de intentos. Solicita un nuevo código.
               </p>
             )}
           </div>
 
           {/* Timer y botón de reenvío */}
-          <div className={styles.resendSection}>
-            {!canResend ? (
-              <div className={styles.timerContainer}>
-                <Clock size={16} />
-                <span className={styles.timerText}>
-                  Reenviar código en {formatTime()}
-                </span>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={handleResend}
-                disabled={loading}
-                className={styles.resendButton}
-              >
-                <RefreshCw size={16} />
-                Reenviar código
-              </button>
-            )}
-          </div>
+          {!sendError && (
+            <div className={styles.resendSection}>
+              {!canResend ? (
+                <div className={styles.timerContainer}>
+                  <Clock size={16} />
+                  <span className={styles.timerText}>
+                    Reenviar código en {formatTime()}
+                  </span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={loading}
+                  className={styles.resendButton}
+                >
+                  <RefreshCw size={16} />
+                  Reenviar código
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Botones de acción */}
           <div className={styles.buttonGroup}>
@@ -130,7 +171,7 @@ export const EmailVerificationModal = ({
               type="submit"
               variant="primary"
               loading={loading}
-              disabled={loading || code.length !== 6 || attempts >= maxAttempts}
+              disabled={loading || code.length !== 6 || attempts >= maxAttempts || sendError}
               fullWidth
             >
               {loading ? 'Verificando...' : 'Verificar código'}
@@ -139,11 +180,11 @@ export const EmailVerificationModal = ({
             <Button
               type="button"
               variant="ghost"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={loading}
               fullWidth
             >
-              Verificar más tarde
+              {sendError ? 'Cerrar' : 'Verificar más tarde'}
             </Button>
           </div>
 
@@ -156,6 +197,7 @@ export const EmailVerificationModal = ({
               <li>Revisa tu carpeta de spam o correo no deseado</li>
               <li>Verifica que el correo sea correcto</li>
               <li>El código expira en 10 minutos</li>
+              <li>Algunos proveedores de correo pueden demorar en entregar el mensaje</li>
             </ul>
           </div>
         </form>
