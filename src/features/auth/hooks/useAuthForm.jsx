@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './useAuth'; 
 import { handleApiError, logError } from '../../../utils/errorHandler';
-import authService from '../../../services/authService'; // ✅ Import correcto
+import authService from '../../../services/authService';
 
 export const useAuthForm = () => {
   const navigate = useNavigate();
@@ -10,57 +10,58 @@ export const useAuthForm = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
+  // ✅ NUEVO: Estados para el modal de verificación
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [registeredUserData, setRegisteredUserData] = useState(null);
+  
   const { login: authLogin } = useAuth(); 
 
   const login = async (email, password, rememberMe = false) => {
-  setLoading(true);
-  setError(null);
-  setSuccess(null);
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
 
-  try {
-    const result = await authLogin({ email, password, rememberMe });
+    try {
+      const result = await authLogin({ email, password, rememberMe });
 
-// ⬅️ SI EL LOGIN FALLA
-if (!result || !result.success) {
-  const errorMessage = result?.error || 'Credenciales incorrectas';
-  setError(errorMessage);
+      if (!result || !result.success) {
+        const errorMessage = result?.error || 'Credenciales incorrectas';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      }
 
-  return { success: false, error: errorMessage };
-}
+      setSuccess('¡Sesión iniciada correctamente!');
 
-// ⬅️ SI EL LOGIN ES EXITOSO
-setSuccess('¡Sesión iniciada correctamente!');
+      setTimeout(() => {
+        const redirectPath =
+          result.role === 'organizador' || result.role === 'admin'
+            ? '/organizer/dashboard'
+            : '/participant/dashboard';
 
-setTimeout(() => {
-  const redirectPath =
-    result.role === 'organizador' || result.role === 'admin'
-      ? '/organizer/dashboard'
-      : '/participant/dashboard';
+        navigate(redirectPath, { replace: true });
+      }, 500);
 
-  navigate(redirectPath, { replace: true });
-}, 500);
+      return { success: true };
 
-return { success: true };
-
-  } catch (err) {
-    logError(err, 'useAuthForm.login');
-    
-    let errorMessage = 'Error al iniciar sesión';
-    
-    if (typeof err === 'string') {
-      errorMessage = err;
-    } else if (err?.message) {
-      errorMessage = err.message;
-    } else if (err?.response?.data?.message) {
-      errorMessage = err.response.data.message;
+    } catch (err) {
+      logError(err, 'useAuthForm.login');
+      
+      let errorMessage = 'Error al iniciar sesión';
+      
+      if (typeof err === 'string') {
+        errorMessage = err;
+      } else if (err?.message) {
+        errorMessage = err.message;
+      } else if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
     }
-    
-    setError(errorMessage);
-    return { success: false, error: errorMessage };  // ← AGREGAR error aquí
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const register = async (formData) => {
     setLoading(true);
@@ -74,29 +75,21 @@ return { success: true };
       return { success: false };
     }
 
-   // Validación de teléfono (debe estar completo)
-if (!formData.telefono || formData.telefono.length < 8) {
-  setError('Ingresa un número de teléfono válido.');
-  setLoading(false);
-  return { success: false };
-}
+    // Validación de teléfono (debe estar completo)
+    if (!formData.telefono || formData.telefono.length < 8) {
+      setError('Ingresa un número de teléfono válido.');
+      setLoading(false);
+      return { success: false };
+    }
 
-// Validación adicional: solo números en DNI
-if (!/^\d+$/.test(formData.dni)) {
-  setError('El DNI debe contener solo números.');
-  setLoading(false);
-  return { success: false };
-}
-
-// Validación de teléfono (debe estar completo)
-if (!formData.telefono || formData.telefono.length < 8) {
-  setError('Ingresa un número de teléfono válido.');
-  setLoading(false);
-  return { success: false };
-}
+    // Validación adicional: solo números en DNI
+    if (!/^\d+$/.test(formData.dni)) {
+      setError('El DNI debe contener solo números.');
+      setLoading(false);
+      return { success: false };
+    }
 
     try {
-      // ✅ CORRECCIÓN: Ya no usamos require, usamos el import de arriba
       await authService.register(
         formData.nombres,
         formData.apellidos,
@@ -107,23 +100,18 @@ if (!formData.telefono || formData.telefono.length < 8) {
         formData.password
       );
       
-      setSuccess('Cuenta creada. Iniciando sesión...');
+      // ✅ NUEVO: Guardar datos y mostrar modal de verificación
+      setRegisteredUserData({
+        email: formData.email,
+        password: formData.password,
+        nombres: formData.nombres
+      });
       
-      const loginResult = await authLogin(
-        { email: formData.email, password: formData.password, rememberMe: false }
-      );
+      setSuccess('Cuenta creada exitosamente');
+      setShowVerificationModal(true);
       
-      if (loginResult.success) {
-        setTimeout(() => {
-          const redirectPath = loginResult.role === 'organizador' || loginResult.role === 'admin'
-            ? '/organizer/dashboard'
-            : '/participant/dashboard';
-          
-          navigate(redirectPath, { replace: true });
-        }, 500);
-      }
+      return { success: true, needsVerification: true };
       
-      return { success: true };
     } catch (err) {
       logError(err, 'useAuthForm.register');
       setError(err.message || 'Error en el registro');
@@ -131,6 +119,42 @@ if (!formData.telefono || formData.telefono.length < 8) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ✅ NUEVO: Función para cuando se verifica el email exitosamente
+  const handleVerificationSuccess = async () => {
+    setShowVerificationModal(false);
+    
+    if (!registeredUserData) {
+      setError('Error al procesar la verificación');
+      return;
+    }
+
+    // Hacer login automático después de verificar
+    setSuccess('¡Correo verificado! Iniciando sesión...');
+    
+    const loginResult = await authLogin({
+      email: registeredUserData.email,
+      password: registeredUserData.password,
+      rememberMe: false
+    });
+
+    if (loginResult.success) {
+      setTimeout(() => {
+        const redirectPath = 
+          loginResult.role === 'organizador' || loginResult.role === 'admin'
+            ? '/organizer/dashboard'
+            : '/participant/dashboard';
+        
+        navigate(redirectPath, { replace: true });
+      }, 500);
+    }
+  };
+
+  // ✅ NUEVO: Función para cuando el usuario cierra el modal sin verificar
+  const handleVerificationSkip = () => {
+    setShowVerificationModal(false);
+    setSuccess('Registro completado. Recuerda verificar tu correo.');
   };
 
   const clearMessages = () => {
@@ -142,6 +166,12 @@ if (!formData.telefono || formData.telefono.length < 8) {
     loading,
     error,
     success,
+    // ✅ NUEVO: Exportar estados y funciones del modal
+    showVerificationModal,
+    registeredUserData,
+    handleVerificationSuccess,
+    handleVerificationSkip,
+    // Funciones existentes
     login,
     register,
     clearMessages

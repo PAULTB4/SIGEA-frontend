@@ -27,13 +27,13 @@ const authService = {
           mantenerSesion: rememberMe
         });
         
-// 🔥 Manejo seguro cuando viene error en lugar de response
-if (!apiResponse || !apiResponse.headers) {
-  throw new Error(
-    apiResponse?.response?.data?.message ||
-    'Error al iniciar sesión'
-  );
-}
+        // 🔥 Manejo seguro cuando viene error en lugar de response
+        if (!apiResponse || !apiResponse.headers) {
+          throw new Error(
+            apiResponse?.response?.data?.message ||
+            'Error al iniciar sesión'
+          );
+        }
 
         const newToken = apiResponse.headers['x-new-token'];
         if (newToken) {
@@ -120,82 +120,172 @@ if (!apiResponse || !apiResponse.headers) {
         }
       };
     } catch (error) {
-  logError(error, 'authService.login');
+      logError(error, 'authService.login');
 
-  const errorInfo = handleApiError(error);
+      const errorInfo = handleApiError(error);
 
-  return {
-    success: false,
-    error: errorInfo.message || 'Error al iniciar sesión'
-  };
-}
-
+      return {
+        success: false,
+        error: errorInfo.message || 'Error al iniciar sesión'
+      };
+    }
   },
 
   register: async (nombres, apellidos, email, dni, telefono, extensionTelefonica, password) => {
-  try {
-    let response;
+    try {
+      let response;
 
-    if (USE_MOCK_API && mockAuthService) {
-      response = await mockAuthService.mockRegister(nombres, apellidos, email, dni, password);
-    } else {
-      try {
-        // ✅ Endpoint correcto para registro de participante
-        const apiResponse = await apiClient.post(`${API_BASE_URL}/usuarios/participante/registrar`, {
-          nombres,
-          apellidos,
-          correo: email,
-          password,
-          dni,
-          telefono,
-          extensionTelefonica
-        });
-        
-        const backendData = apiResponse.data;
-        
-        // El registro exitoso no devuelve token, necesitamos hacer login después
-        response = {
-          success: true,
-          message: backendData.message || 'Registro exitoso'
-        };
-      } catch (error) {
-        // ✅ FIX CRÍTICO: El backend envía código 400 pero con mensaje de éxito
-        const errorResponse = error?.response?.data;
-        const errorMessage = errorResponse?.message || '';
-        
-        console.log('🔍 Error response:', errorResponse);
-        console.log('🔍 Error message:', errorMessage);
-        
-        if (errorMessage.toLowerCase().includes('registrado con exito') || 
-            errorMessage.toLowerCase().includes('registrado con éxito')) {
-          // Es un registro exitoso a pesar del código 400
-          console.log('✅ Registro exitoso (código 400 con mensaje de éxito)');
+      if (USE_MOCK_API && mockAuthService) {
+        response = await mockAuthService.mockRegister(nombres, apellidos, email, dni, password);
+      } else {
+        try {
+          // ✅ Endpoint correcto para registro de participante
+          const apiResponse = await apiClient.post(`${API_BASE_URL}/usuarios/participante/registrar`, {
+            nombres,
+            apellidos,
+            correo: email,
+            password,
+            dni,
+            telefono,
+            extensionTelefonica
+          });
+          
+          const backendData = apiResponse.data;
+          
+          // El registro exitoso no devuelve token, necesitamos hacer login después
           response = {
             success: true,
-            message: errorMessage
+            message: backendData.message || 'Registro exitoso'
           };
-        } else {
-          // Es un error real de registro
-          console.error('❌ Error real en registro:', errorMessage);
-          throw error;
+        } catch (error) {
+          // ✅ FIX CRÍTICO: El backend envía código 400 pero con mensaje de éxito
+          const errorResponse = error?.response?.data;
+          const errorMessage = errorResponse?.message || '';
+          
+          console.log('🔍 Error response:', errorResponse);
+          console.log('🔍 Error message:', errorMessage);
+          
+          if (errorMessage.toLowerCase().includes('registrado con exito') || 
+              errorMessage.toLowerCase().includes('registrado con éxito')) {
+            // Es un registro exitoso a pesar del código 400
+            console.log('✅ Registro exitoso (código 400 con mensaje de éxito)');
+            response = {
+              success: true,
+              message: errorMessage
+            };
+          } else {
+            // Es un error real de registro
+            console.error('❌ Error real en registro:', errorMessage);
+            throw error;
+          }
         }
       }
-    }
 
-    return response;
-  } catch (error) {
-    logError(error, 'authService.register');
-    
-    // ✅ MANEJO SEGURO DE ERRORES
-    const errorInfo = handleApiError(error);
-    const errorMessage = errorInfo?.message || 
-                        error?.response?.data?.message || 
-                        error?.message || 
-                        'Error en el registro';
-    
-    throw { message: errorMessage };
-  }
-},
+      return response;
+    } catch (error) {
+      logError(error, 'authService.register');
+      
+      // ✅ MANEJO SEGURO DE ERRORES
+      const errorInfo = handleApiError(error);
+      const errorMessage = errorInfo?.message || 
+                          error?.response?.data?.message || 
+                          error?.message || 
+                          'Error en el registro';
+      
+      throw { message: errorMessage };
+    }
+  },
+
+  /**
+   * Envía código de verificación al correo del usuario
+   * @param {string} correo - Email del usuario
+   * @param {string} nombres - Nombres del usuario
+   * @returns {Promise} Response con status del envío
+   */
+  sendVerificationCode: async (correo, nombres) => {
+    try {
+      const response = await apiClient.post(
+        `${API_BASE_URL}/usuarios/validar-correo/enviar-codigo-verificacion`,
+        null,  // No body, solo query params
+        {
+          params: {
+            correo,
+            nombres
+          }
+        }
+      );
+
+      const backendData = response.data;
+
+      return {
+        success: backendData.status || true,
+        message: backendData.message || 'Código enviado exitosamente',
+        data: backendData.extraData
+      };
+    } catch (error) {
+      logError(error, 'authService.sendVerificationCode');
+      const errorInfo = handleApiError(error);
+      throw { 
+        message: errorInfo.message || 'Error al enviar código de verificación'
+      };
+    }
+  },
+
+  /**
+   * Valida el código de verificación ingresado por el usuario
+   * @param {string} correo - Email del usuario
+   * @param {string} codigo - Código de 6 dígitos
+   * @returns {Promise} Response con resultado de validación
+   */
+  validateVerificationCode: async (correo, codigo) => {
+    try {
+      const response = await apiClient.post(
+        `${API_BASE_URL}/usuarios/validar-correo/validar-codigo-verificacion`,
+        null,  // No body, solo query params
+        {
+          params: {
+            correo,
+            codigo
+          }
+        }
+      );
+
+      const backendData = response.data;
+
+      return {
+        success: backendData.status || true,
+        message: backendData.message || 'Código verificado exitosamente',
+        data: backendData.extraData
+      };
+    } catch (error) {
+      logError(error, 'authService.validateVerificationCode');
+      
+      // Si el backend devuelve 400 con mensaje de código incorrecto
+      const errorMessage = error?.response?.data?.message || '';
+      
+      if (errorMessage.toLowerCase().includes('incorrecto') || 
+          errorMessage.toLowerCase().includes('inválido') ||
+          errorMessage.toLowerCase().includes('invalido')) {
+        throw { 
+          message: 'Código incorrecto. Por favor, verifica e intenta nuevamente.',
+          isInvalidCode: true
+        };
+      }
+      
+      if (errorMessage.toLowerCase().includes('expirado') || 
+          errorMessage.toLowerCase().includes('vencido')) {
+        throw { 
+          message: 'El código ha expirado. Solicita uno nuevo.',
+          isExpired: true
+        };
+      }
+      
+      const errorInfo = handleApiError(error);
+      throw { 
+        message: errorInfo.message || 'Error al validar código'
+      };
+    }
+  },
 
   verifyDNI: async (dni) => {
     try {
