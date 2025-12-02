@@ -129,6 +129,103 @@ export const getExpirationDate = (token) => {
   }
 };
 
+// ============================================
+// AGREGAR ESTAS FUNCIONES A tu tokenHelper.js EXISTENTE
+// ============================================
+
+/**
+ * Obtiene información completa del usuario desde el token
+ * Útil para obtener userId, email, roles, etc.
+ * @param {string} token - Token JWT
+ * @returns {object|null} Objeto con información del usuario o null
+ */
+export const getUserInfoFromToken = (token) => {
+  try {
+    const decoded = jwtDecode(token);
+    
+    return {
+      id: decoded.sub || decoded.userId || decoded.id || null,
+      email: decoded.email || decoded.correo || null,
+      roles: decoded.roles || decoded.authorities || [],
+      name: decoded.name || decoded.nombre || null,
+      // Agregar cualquier otro campo que tu backend incluya en el JWT
+    };
+  } catch (error) {
+    console.error('Error al obtener información del usuario del token:', error);
+    return null;
+  }
+};
+
+/**
+ * Extrae roles del token JWT
+ * El backend puede enviar roles como array o string
+ * @param {string} token - Token JWT
+ * @returns {array} Array de roles
+ */
+export const getRolesFromToken = (token) => {
+  try {
+    const decoded = jwtDecode(token);
+    const roles = decoded.roles || decoded.authorities || [];
+    
+    // Si es un string, convertir a array
+    if (typeof roles === 'string') {
+      return [roles];
+    }
+    
+    // Si es un array, retornar tal cual
+    if (Array.isArray(roles)) {
+      return roles;
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('Error al obtener roles del token:', error);
+    return [];
+  }
+};
+
+/**
+ * Verifica si el usuario tiene un rol específico
+ * @param {string} token - Token JWT
+ * @param {string} role - Rol a verificar
+ * @returns {boolean} true si tiene el rol
+ */
+export const hasRole = (token, role) => {
+  const roles = getRolesFromToken(token);
+  return roles.includes(role);
+};
+
+/**
+ * Verifica si el usuario es organizador
+ * @param {string} token - Token JWT
+ * @returns {boolean} true si es organizador
+ */
+export const isOrganizer = (token) => {
+  return hasRole(token, 'ORGANIZADOR');
+};
+
+/**
+ * Verifica si el usuario es administrador
+ * @param {string} token - Token JWT
+ * @returns {boolean} true si es administrador
+ */
+export const isAdmin = (token) => {
+  return hasRole(token, 'ADMINISTRADOR');
+};
+
+/**
+ * Verifica si el usuario es participante
+ * @param {string} token - Token JWT
+ * @returns {boolean} true si es participante
+ */
+export const isParticipant = (token) => {
+  return hasRole(token, 'PARTICIPANTE');
+};
+
+// ============================================
+// ACTUALIZAR EL EXPORT DEFAULT AL FINAL DEL ARCHIVO
+// ============================================
+
 export default {
   decodeToken,
   isTokenExpired,
@@ -137,4 +234,12 @@ export default {
   getUserIdFromToken,
   getRoleFromToken,
   getExpirationDate,
+  // AGREGAR ESTAS NUEVAS FUNCIONES:
+  getUserInfoFromToken,
+  getRolesFromToken,
+  hasRole,
+  isOrganizer,
+  isAdmin,
+  isParticipant,
 };
+

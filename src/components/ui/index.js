@@ -12,6 +12,7 @@ import { Divider } from '../../desingSystem/primitives/divider';
 import { Icon } from '../../desingSystem/primitives/icon';
 import { Alert } from './Alert'; // Local import
 import PhoneInput from './PhoneInput'; // Local import
+export { CodeInput } from './CodeInput';
 
 import * as Tokens from '../../desingSystem/tokens'; 
 

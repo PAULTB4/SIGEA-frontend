@@ -17,7 +17,7 @@ const apiClient = axios.create({
     'Accept': 'application/json'
   },
   timeout: API_CONFIG.TIMEOUT,
-  withCredentials: true  // ✅ AGREGAR ESTA LÍNEA
+  withCredentials: true  // ✅ Importante para CORS con cookies
 });
 
 let isRefreshing = false;
@@ -37,19 +37,37 @@ const processQueue = (error, token = null) => {
 
 /**
  * Interceptor de Request
- * Agrega el token de autenticación a cada petición
+ * Agrega el token de autenticación a cada petición (excepto endpoints públicos)
  */
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    // ✅ Endpoints públicos que NO requieren token
+    const publicEndpoints = [
+      '/usuarios/auth/login',
+      '/usuarios/participante/registrar',
+      '/usuarios/validar-correo/enviar-codigo-verificacion',
+      '/usuarios/validar-correo/validar-codigo-verificacion',
+      '/auth/password-recovery',
+    ];
     
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Verificar si es un endpoint público
+    const isPublicEndpoint = publicEndpoints.some(endpoint => 
+      config.url?.includes(endpoint)
+    );
+    
+    // Solo agregar token si NO es un endpoint público
+    if (!isPublicEndpoint) {
+      const token = localStorage.getItem('authToken');
+      
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     
     devLog(`Request: ${config.method?.toUpperCase()} ${config.url}`, {
       headers: config.headers,
-      data: config.data
+      data: config.data,
+      isPublic: isPublicEndpoint
     });
     
     return config;
@@ -78,11 +96,12 @@ apiClient.interceptors.response.use(
       url: error.config?.url
     });
     
-    // Si es 401 y no es el endpoint de login, intentar refresh
+    // Si es 401 y no es el endpoint de login/registro, intentar refresh
     if (
       error.response?.status === 401 && 
       !originalRequest._retry &&
-      !originalRequest.url?.includes('/auth/login')
+      !originalRequest.url?.includes('/auth/login') &&
+      !originalRequest.url?.includes('/participante/registrar')
     ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -169,7 +188,7 @@ apiClient.interceptors.response.use(
       console.error('Acceso prohibido:', error.response?.data?.message);
     }
     
-    return error;
+    return Promise.reject(error);  // ✅ CAMBIO CRÍTICO: return Promise.reject(error) en lugar de return error
   }
 );
 

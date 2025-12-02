@@ -2,6 +2,8 @@ import apiClient from './axiosConfig';
 import { jwtDecode } from 'jwt-decode';
 import { handleApiError, logError } from '../utils/errorHandler';
 import { normalizeResponse } from '../utils/apiHelpers';
+import { getUserInfoFromToken, getUserIdFromToken } from '../utils/tokenHelper';
+
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 const USE_MOCK_API = import.meta.env.MODE === 'development' && import.meta.env.VITE_USE_MOCK_API === 'true';
@@ -26,67 +28,67 @@ const authService = {
           password: password,
           mantenerSesion: rememberMe
         });
-        
-// 🔥 Manejo seguro cuando viene error en lugar de response
-if (!apiResponse || !apiResponse.headers) {
-  throw new Error(
-    apiResponse?.response?.data?.message ||
-    'Error al iniciar sesión'
-  );
-}
+
+        // 🔥 Manejo seguro cuando viene error en lugar de response
+        if (!apiResponse || !apiResponse.headers) {
+          throw new Error(
+            apiResponse?.response?.data?.message ||
+            'Error al iniciar sesión'
+          );
+        }
 
         const newToken = apiResponse.headers['x-new-token'];
         if (newToken) {
           sessionStorage.setItem("accessToken", newToken);
         }
-        
+
         // ✅ CORREGIDO: Adaptar respuesta del backend SIGEA
         const backendData = apiResponse.data;
-        
+
         if (!backendData.status) {
           throw new Error(backendData.message || 'Error al iniciar sesión');
         }
-        
+
         // ✅ FIX: Usar Access_Token (guion bajo, no guión)
-        const token = backendData.extraData?.accessToken || 
-                      backendData.extraData?.tokenUsuario || 
-                      backendData.token;
-        
+        const token = backendData.extraData?.accessToken ||
+          backendData.extraData?.tokenUsuario ||
+          backendData.token;
+
         if (!token) {
           throw new Error('No se recibió token de autenticación');
         }
-        
+
         // ✅ Guardar refresh token si existe
         const refreshToken = backendData.extraData?.Refresh_Token;
         if (refreshToken) {
           localStorage.setItem('refreshToken', refreshToken);
         }
-        
+
         // Intentar obtener el rol desde el token JWT
         let userRole = 'participante';
         let userId = null;
-        
+
         try {
           const decoded = jwtDecode(token);
           console.log('Token decodificado:', decoded);
-          
+
           userId = decoded.usuarioId || decoded.sub;
-          
+
           // El backend SIGEA envía el rol en un array 'roles'
           if (decoded.roles && Array.isArray(decoded.roles) && decoded.roles.length > 0) {
             userRole = decoded.roles[0];
           } else {
             userRole = decoded.role || decoded.rol || 'participante';
           }
-          
+
           // Normalizar a minúsculas
           userRole = userRole.toLowerCase();
-          
+
           console.log('Rol extraído del token:', userRole);
         } catch (error) {
           console.warn('No se pudo decodificar el rol del token:', error);
         }
-        
+
         // Crear respuesta normalizada para el frontend
         response = {
           token: token,
@@ -120,16 +122,15 @@ if (!apiResponse || !apiResponse.headers) {
         }
       };
     } catch (error) {
-  logError(error, 'authService.login');
+      logError(error, 'authService.login');
 
-  const errorInfo = handleApiError(error);
+      const errorInfo = handleApiError(error);
 
-  return {
-    success: false,
-    error: errorInfo.message || 'Error al iniciar sesión'
-  };
-}
-
+      return {
+        success: false,
+        error: errorInfo.message || 'Error al iniciar sesión'
+      };
+    }
   },
 
   register: async (nombres, apellidos, email, dni, telefono, extensionTelefonica, password) => {
@@ -150,9 +151,9 @@ if (!apiResponse || !apiResponse.headers) {
             telefono,
             extensionTelefonica
           });
-          
+
           const backendData = apiResponse.data;
-          
+
           // El registro exitoso no devuelve token, necesitamos hacer login después
           response = {
             success: true,
@@ -160,11 +161,14 @@ if (!apiResponse || !apiResponse.headers) {
           };
         } catch (error) {
           // ✅ FIX CRÍTICO: El backend envía código 400 pero con mensaje de éxito
-          // Verificamos si el mensaje indica éxito a pesar del código HTTP de error
-          const errorMessage = error?.response?.data?.message || '';
-          
-          if (errorMessage.toLowerCase().includes('registrado con exito') || 
-              errorMessage.toLowerCase().includes('registrado con éxito')) {
+          const errorResponse = error?.response?.data;
+          const errorMessage = errorResponse?.message || '';
+
+          console.log('🔍 Error response:', errorResponse);
+          console.log('🔍 Error message:', errorMessage);
+
+          if (errorMessage.toLowerCase().includes('registrado con exito') ||
+            errorMessage.toLowerCase().includes('registrado con éxito')) {
             // Es un registro exitoso a pesar del código 400
             console.log('✅ Registro exitoso (código 400 con mensaje de éxito)');
             response = {
@@ -173,6 +177,7 @@ if (!apiResponse || !apiResponse.headers) {
             };
           } else {
             // Es un error real de registro
+            console.error('❌ Error real en registro:', errorMessage);
             throw error;
           }
         }
@@ -181,8 +186,124 @@ if (!apiResponse || !apiResponse.headers) {
       return response;
     } catch (error) {
       logError(error, 'authService.register');
+
+      // ✅ MANEJO SEGURO DE ERRORES
       const errorInfo = handleApiError(error);
-      throw { message: errorInfo.message };
+      const errorMessage = errorInfo?.message ||
+        error?.response?.data?.message ||
+        error?.message ||
+        'Error en el registro';
+
+      throw { message: errorMessage };
+    }
+  },
+
+  /**
+   * Envía código de verificación al correo del usuario
+   * @param {string} correo - Email del usuario
+   * @param {string} nombres - Nombres del usuario
+   * @returns {Promise} Response con status del envío
+   */
+  sendVerificationCode: async (correo, nombres) => {
+    try {
+      const response = await apiClient.post(
+        `${API_BASE_URL}/usuarios/validar-correo/enviar-codigo-verificacion`,
+        null,  // No body, solo query params
+        {
+          params: {
+            correo,
+            nombres
+          }
+        }
+      );
+
+      const backendData = response.data;
+
+      return {
+        success: backendData.status || true,
+        message: backendData.message || 'Código enviado exitosamente',
+        data: backendData.extraData
+      };
+    } catch (error) {
+      logError(error, 'authService.sendVerificationCode');
+      const errorInfo = handleApiError(error);
+      throw {
+        message: errorInfo.message || 'Error al enviar código de verificación'
+      };
+    }
+  },
+
+  /**
+   * Valida el código de verificación ingresado por el usuario
+   * @param {string} correo - Email del usuario
+   * @param {string} codigo - Código de 6 dígitos
+   * @returns {Promise} Response con resultado de validación
+   */
+  validateVerificationCode: async (correo, codigo) => {
+    try {
+      // Asegurar que el código y correo estén limpios
+      const correoLimpio = correo.trim();
+      const codigoLimpio = codigo.toString().trim();
+
+      const response = await apiClient.post(
+        `${API_BASE_URL}/usuarios/validar-correo/validar-codigo-verificacion`,
+        null,
+        {
+          params: {
+            correo: correoLimpio,
+            codigo: codigoLimpio
+          }
+        }
+      );
+
+      const backendData = response.data;
+
+      // ✅ CRÍTICO: Verificar el campo 'status' del backend
+      if (backendData.status === false) {
+        // Backend dice que el código es incorrecto
+        throw {
+          message: backendData.message || 'Código incorrecto. Por favor, verifica e intenta nuevamente.',
+          isInvalidCode: true
+        };
+      }
+
+      // Si llegamos aquí, el código es correcto
+      return {
+        success: true,
+        message: backendData.message || 'Código verificado exitosamente',
+        data: backendData.extraData
+      };
+    } catch (error) {
+      logError(error, 'authService.validateVerificationCode');
+
+      // Si ya es un error lanzado arriba, re-lanzarlo
+      if (error.isInvalidCode || error.isExpired) {
+        throw error;
+      }
+
+      const errorMessage = error?.response?.data?.message || '';
+
+      if (errorMessage.toLowerCase().includes('incorrecto') ||
+        errorMessage.toLowerCase().includes('inválido') ||
+        errorMessage.toLowerCase().includes('invalido')) {
+        throw {
+          message: 'Código incorrecto. Por favor, verifica e intenta nuevamente.',
+          isInvalidCode: true
+        };
+      }
+
+      if (errorMessage.toLowerCase().includes('expirado') ||
+        errorMessage.toLowerCase().includes('vencido')) {
+        throw {
+          message: 'El código ha expirado. Solicita uno nuevo.',
+          isExpired: true
+        };
+      }
+
+      const errorInfo = handleApiError(error);
+      throw {
+        message: errorInfo.message || 'Error al validar código'
+      };
     }
   },
 
@@ -268,28 +389,28 @@ if (!apiResponse || !apiResponse.headers) {
 
   isAuthenticated: () => {
     const token = localStorage.getItem('authToken');
-    
+
     if (!token) {
       return false;
     }
-    
+
     if (USE_MOCK_API) {
       const timestamp = localStorage.getItem('tokenTimestamp');
       if (!timestamp) {
         return false;
       }
-      
+
       const oneHour = 60 * 60 * 1000;
       const isValid = Date.now() - parseInt(timestamp) < oneHour;
-      
+
       if (!isValid) {
         authService.logout();
         return false;
       }
-      
+
       return true;
     }
-    
+
     try {
       const decoded = jwtDecode(token);
       if (decoded.exp && decoded.exp * 1000 < Date.now()) {
@@ -307,13 +428,13 @@ if (!apiResponse || !apiResponse.headers) {
   getTokenExpiration: () => {
     const token = localStorage.getItem('authToken');
     if (!token) return null;
-    
+
     if (USE_MOCK_API) {
       const timestamp = localStorage.getItem('tokenTimestamp');
       if (!timestamp) return null;
       return new Date(parseInt(timestamp) + 60 * 60 * 1000);
     }
-    
+
     try {
       const decoded = jwtDecode(token);
       return decoded.exp ? new Date(decoded.exp * 1000) : null;
@@ -325,7 +446,7 @@ if (!apiResponse || !apiResponse.headers) {
   isTokenExpiringSoon: () => {
     const expiration = authService.getTokenExpiration();
     if (!expiration) return false;
-    
+
     const fiveMinutesFromNow = Date.now() + (5 * 60 * 1000);
     return expiration.getTime() < fiveMinutesFromNow;
   },
@@ -336,22 +457,22 @@ if (!apiResponse || !apiResponse.headers) {
         localStorage.setItem('tokenTimestamp', Date.now().toString());
         return true;
       }
-      
+
       const currentToken = authService.getToken();
       if (!currentToken) return false;
-      
+
       const response = await apiClient.post(`${API_BASE_URL}/auth/refresh`, {
         token: currentToken
       });
-      
+
       const normalizedResponse = normalizeResponse(response);
-      
+
       if (normalizedResponse.token) {
         localStorage.setItem('authToken', normalizedResponse.token);
         localStorage.setItem('tokenTimestamp', Date.now().toString());
         return true;
       }
-      
+
       return false;
     } catch (error) {
       logError(error, 'authService.refreshToken');
@@ -363,13 +484,55 @@ if (!apiResponse || !apiResponse.headers) {
     if (!authService.isAuthenticated()) {
       return false;
     }
-    
+
     if (authService.isTokenExpiringSoon()) {
       return await authService.refreshToken();
     }
-    
+
     return true;
-  }
+  },
+
+  /**
+   * Obtiene el ID del usuario desde el token almacenado
+   * Este ID se usa como organizadorId en las actividades
+   * @returns {string|null} - User ID o null si no hay token
+   */
+  getUserId: () => {
+    const token = authService.getToken();
+    if (!token) return null;
+
+    return getUserIdFromToken(token);
+  },
+
+  /**
+   * Obtiene información completa del usuario desde el token
+   * Incluye: id, email, roles, name
+   * @returns {object|null} - Información del usuario o null
+   */
+  getUserInfo: () => {
+    const token = authService.getToken();
+    if (!token) return null;
+
+    return getUserInfoFromToken(token);
+  },
+
+  /**
+   * Obtiene el email del usuario desde el token
+   * @returns {string|null} - Email o null
+   */
+  getUserEmail: () => {
+    const userInfo = authService.getUserInfo();
+    return userInfo?.email || null;
+  },
+
+  /**
+   * Obtiene los roles del usuario
+   * @returns {array} - Array de roles
+   */
+  getUserRoles: () => {
+    const userInfo = authService.getUserInfo();
+    return userInfo?.roles || [];
+  },
 };
 
 export default authService;

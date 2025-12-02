@@ -1,14 +1,14 @@
 import React from 'react';
 import { Input } from '../../../../components/ui';
 
-const ACTIVITY_TYPES = [
-  { value: 'curso', label: 'Curso' },
-  { value: 'taller', label: 'Taller' },
-  { value: 'ciclo_conferencias', label: 'Ciclo de Conferencias' },
-  { value: 'diplomado', label: 'Diplomado' }
-];
-
-const BasicInfo = ({ formData, handleInputChange, validationErrors }) => {
+const BasicInfo = ({ 
+  formData, 
+  handleInputChange, 
+  validationErrors,
+  activityTypes = [],
+  activityStates = [],
+  loadingDropdowns = false
+}) => {
   return (
     <section>
       <h3 className="text-lg font-bold mb-6 pb-3 border-b border-gray-200 text-gray-800">
@@ -17,7 +17,9 @@ const BasicInfo = ({ formData, handleInputChange, validationErrors }) => {
       <div className="space-y-6">
         {/* Título */}
         <div>
-           <label className="block text-sm font-semibold mb-2 text-gray-700">Título de la Actividad *</label>
+           <label className="block text-sm font-semibold mb-2 text-gray-700">
+             Título de la Actividad *
+           </label>
            <Input
              type="text"
              name="title"
@@ -28,26 +30,42 @@ const BasicInfo = ({ formData, handleInputChange, validationErrors }) => {
            />
         </div>
 
-        {/* Tipo */}
+        {/* Tipo de Actividad */}
         <div>
-            <label className="block text-sm font-semibold mb-2 text-gray-700">Tipo de Actividad *</label>
+            <label className="block text-sm font-semibold mb-2 text-gray-700">
+              Tipo de Actividad *
+            </label>
             <select
-                name="type"
-                value={formData.type}
+                name="tipoActividadId"
+                value={formData.tipoActividadId}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 rounded-lg text-gray-900 border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                disabled={loadingDropdowns}
+                className="w-full px-4 py-3 rounded-lg text-gray-900 border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                {ACTIVITY_TYPES.map(type => (
-                    <option key={type.value} value={type.value}>{type.label}</option>
-                ))}
+                {loadingDropdowns ? (
+                  <option value="">Cargando...</option>
+                ) : (
+                  <>
+                    <option value="">Seleccionar tipo</option>
+                    {activityTypes.map(type => (
+                      <option key={type.id} value={type.id}>
+                        {type.nombreActividad}
+                      </option>
+                    ))}
+                  </>
+                )}
             </select>
-             {validationErrors.type && <p className="text-xs mt-1 text-red-400">{validationErrors.type}</p>}
+            {validationErrors.tipoActividadId && (
+              <p className="text-xs mt-1 text-red-400">{validationErrors.tipoActividadId}</p>
+            )}
         </div>
 
         {/* Duración y Fechas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-700">Duración Estimada *</label>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                  Duración Estimada *
+                </label>
                 <Input
                     type="text"
                     name="estimatedDuration"
@@ -57,49 +75,88 @@ const BasicInfo = ({ formData, handleInputChange, validationErrors }) => {
                     error={validationErrors.estimatedDuration}
                 />
             </div>
-            {/* ... Inputs de Fecha Inicio y Fin (similar estructura) ... */}
-             {/* Puedes simplificar usando el componente Input si soporta type="date"/"time" o manteniendo el HTML nativo con estilos */}
-             <div>
-                 <label className="block text-sm font-semibold mb-2 text-gray-700">Fecha de Inicio *</label>
-                 <div className="flex gap-2">
-                     <input
-                        type="date"
-                        name="startDate"
-                        value={formData.startDate}
-                        onChange={handleInputChange}
-                        className="flex-1 px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500"
-                     />
-                     <input
-                        type="time"
-                        name="startTime"
-                        value={formData.startTime}
-                        onChange={handleInputChange}
-                        className="px-3 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 w-24"
-                     />
-                 </div>
-                 {validationErrors.startDate && <p className="text-xs mt-1 text-red-400">{validationErrors.startDate}</p>}
-             </div>
-             {/* Repetir para Fecha Fin */}
-             <div>
-                 <label className="block text-sm font-semibold mb-2 text-gray-700">Fecha de Fin *</label>
-                 <div className="flex gap-2">
-                     <input
-                        type="date"
-                        name="endDate"
-                        value={formData.endDate}
-                        onChange={handleInputChange}
-                        className="flex-1 px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500"
-                     />
-                     <input
-                        type="time"
-                        name="endTime"
-                        value={formData.endTime}
-                        onChange={handleInputChange}
-                        className="px-3 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 w-24"
-                     />
-                 </div>
-                 {validationErrors.endDate && <p className="text-xs mt-1 text-red-400">{validationErrors.endDate}</p>}
-             </div>
+            
+            {/* Fecha de Inicio */}
+            <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                  Fecha de Inicio *
+                </label>
+                <div className="flex gap-2">
+                    <input
+                       type="date"
+                       name="startDate"
+                       value={formData.startDate}
+                       onChange={handleInputChange}
+                       className="flex-1 px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                       type="time"
+                       name="startTime"
+                       value={formData.startTime}
+                       onChange={handleInputChange}
+                       className="px-3 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 w-24"
+                    />
+                </div>
+                {validationErrors.startDate && (
+                  <p className="text-xs mt-1 text-red-400">{validationErrors.startDate}</p>
+                )}
+            </div>
+            
+            {/* Fecha de Fin */}
+            <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                  Fecha de Fin *
+                </label>
+                <div className="flex gap-2">
+                    <input
+                       type="date"
+                       name="endDate"
+                       value={formData.endDate}
+                       onChange={handleInputChange}
+                       className="flex-1 px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                       type="time"
+                       name="endTime"
+                       value={formData.endTime}
+                       onChange={handleInputChange}
+                       className="px-3 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 w-24"
+                    />
+                </div>
+                {validationErrors.endDate && (
+                  <p className="text-xs mt-1 text-red-400">{validationErrors.endDate}</p>
+                )}
+            </div>
+        </div>
+
+        {/* Estado de Actividad */}
+        <div>
+            <label className="block text-sm font-semibold mb-2 text-gray-700">
+              Estado *
+            </label>
+            <select
+                name="estadoId"
+                value={formData.estadoId}
+                onChange={handleInputChange}
+                disabled={loadingDropdowns}
+                className="w-full px-4 py-3 rounded-lg text-gray-900 border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                {loadingDropdowns ? (
+                  <option value="">Cargando...</option>
+                ) : (
+                  <>
+                    <option value="">Seleccionar estado</option>
+                    {activityStates.map(state => (
+                      <option key={state.id} value={state.id}>
+                        {state.etiqueta}
+                      </option>
+                    ))}
+                  </>
+                )}
+            </select>
+            {validationErrors.estadoId && (
+              <p className="text-xs mt-1 text-red-400">{validationErrors.estadoId}</p>
+            )}
         </div>
       </div>
     </section>

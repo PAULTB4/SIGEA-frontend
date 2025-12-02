@@ -3,203 +3,310 @@ import authService from './authService';
 import { handleApiError, logError } from '../utils/errorHandler';
 import { normalizeResponse } from '../utils/apiHelpers';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
-const USE_MOCK_API =import.meta.env.VITE_USE_MOCK_API !== 'false';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://sigeabackend.zentrycorp.dev/api/v1';
+const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === 'true';
+
+// 🔍 AGREGAR ESTAS LÍNEAS PARA DEBUG:
+console.log('🔍 VITE_USE_MOCK_API:', import.meta.env.VITE_USE_MOCK_API);
+console.log('🔍 USE_MOCK_API:', USE_MOCK_API);
 
 const activityService = {
+  // ==================== NUEVOS ENDPOINTS REALES ====================
+  
   /**
-   * Create a new activity
-   * @param {Object} activityData - Activity data from form
-   * @returns {Promise<Object>} Response with created activity
+   * GET /api/v1/tipos-actividad/listar - Obtener tipos de actividad
    */
-  createActivity: async (activityData) => {
+  getActivityTypes: async () => {
     try {
-      // Prepare FormData for file upload
-      const formData = new FormData();
-      if (activityData.coverImage) {
-        formData.append('coverImage', activityData.coverImage);
-      }
-      // Add text fields
-      formData.append('title', activityData.title);
-      formData.append('type', activityData.type);
-      formData.append('estimatedDuration', activityData.estimatedDuration);
-      formData.append('startDate', activityData.startDate);
-      formData.append('startTime', activityData.startTime);
-      formData.append('endDate', activityData.endDate);
-      formData.append('endTime', activityData.endTime);
-      formData.append('primaryOrganizer', activityData.primaryOrganizer);
-      formData.append('coOrganizer', activityData.coOrganizer);
-      formData.append('sponsor', activityData.sponsor);
-      formData.append('description', activityData.description);
-
-      // Add files
-      activityData.contentFiles.forEach((fileObj, index) => {
-        formData.append(`files[]`, fileObj.file);
-      });
-
       if (USE_MOCK_API) {
-        // Use mock service
-        return activityService.mockCreateActivity(activityData);
-      } else {
-        // Use real API
-        const token = authService.getToken();
-        const response = await axios.post(
-          `${API_BASE_URL}/activities`,
-          formData,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data'
-            }
-          }
-        );
-        return normalizeResponse(response);
+        return activityService.mockGetActivityTypes();
       }
+      
+      const token = authService.getToken();
+      const response = await axios.get(
+        `${API_BASE_URL}/tipos-actividad/listar`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      return normalizeResponse(response);
     } catch (error) {
-        logError(error, 'serviceName.methodName');
-        const errorInfo = handleApiError(error);
-        throw { message: errorInfo.message }; 
+      logError(error, 'activityService.getActivityTypes');
+      const errorInfo = handleApiError(error);
+      throw { message: errorInfo.message };
     }
   },
 
   /**
-   * Get all activities for current organizer
+   * GET /api/v1/estados-actividad/listar - Obtener estados de actividad
    */
-  getActivities: async (page = 1, limit = 10, filters = {}) => {
+  getActivityStates: async () => {
     try {
-      const params = new URLSearchParams({
-        page,
-        limit,
-        ...filters
-      });
+      if (USE_MOCK_API) {
+        return activityService.mockGetActivityStates();
+      }
       
+      const token = authService.getToken();
+      const response = await axios.get(
+        `${API_BASE_URL}/estados-actividad/listar`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      return normalizeResponse(response);
+    } catch (error) {
+      logError(error, 'activityService.getActivityStates');
+      const errorInfo = handleApiError(error);
+      throw { message: errorInfo.message };
+    }
+  },
+
+  /**
+   * GET /api/v1/actividades/listar - Listar todas las actividades
+   */
+  getActivities: async (filters = {}) => {
+    try {
       if (USE_MOCK_API) {
         return activityService.mockGetActivities();
-      } else {
-        const token = authService.getToken();
-        const response = await axios.get(
-          `${API_BASE_URL}/activities?${params}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        return normalizeResponse(response);
       }
+      
+      const token = authService.getToken();
+      const response = await axios.get(
+        `${API_BASE_URL}/actividades/listar`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      return normalizeResponse(response);
     } catch (error) {
-        logError(error, 'serviceName.methodName');
-        const errorInfo = handleApiError(error);
-        throw { message: errorInfo.message }; 
+      logError(error, 'activityService.getActivities');
+      const errorInfo = handleApiError(error);
+      throw { message: errorInfo.message };
     }
   },
 
   /**
-   * Get activity details (with status and dates)
-   */
-  getActivityDetails: async (activityId) => {
-    try {
-      if (USE_MOCK_API) {
-        return activityService.mockGetActivityDetails(activityId);
-      } else {
-        const token = authService.getToken();
-        const response = await axios.get(
-          `${API_BASE_URL}/activities/${activityId}/details`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        return normalizeResponse(response);
-      }
-    } catch (error) {
-        logError(error, 'serviceName.methodName');
-        const errorInfo = handleApiError(error);
-        throw { message: errorInfo.message }; 
-    }
-  },
-
-  /**
-   * Get activity by ID
+   * GET /api/v1/actividades/obtener/{id} - Obtener actividad por ID
    */
   getActivity: async (activityId) => {
     try {
       if (USE_MOCK_API) {
         return activityService.mockGetActivity(activityId);
-      } else {
-        const token = authService.getToken();
-        const response = await axios.get(
-          `${API_BASE_URL}/activities/${activityId}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        return normalizeResponse(response);
       }
+      
+      const token = authService.getToken();
+      const response = await axios.get(
+        `${API_BASE_URL}/actividades/obtener/${activityId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      return normalizeResponse(response);
     } catch (error) {
-        logError(error, 'serviceName.methodName');
-        const errorInfo = handleApiError(error);
-        throw { message: errorInfo.message }; 
+      logError(error, 'activityService.getActivity');
+      const errorInfo = handleApiError(error);
+      throw { message: errorInfo.message };
     }
   },
 
   /**
-   * Update activity
+   * POST /api/v1/actividades/create - Crear nueva actividad
+   */
+  createActivity: async (activityData) => {
+    try {
+      if (USE_MOCK_API) {
+        return activityService.mockCreateActivity(activityData);
+      }
+
+      const token = authService.getToken();
+      
+      // Preparar el payload según la estructura del backend
+      const payload = {
+        titulo: activityData.title,
+        descripcion: activityData.description,
+        fechaInicio: activityData.startDate,
+        fechaFin: activityData.endDate,
+        horaInicio: activityData.startTime,
+        horaFin: activityData.endTime,
+        estadoId: activityData.estadoId,
+        organizadorId: activityData.organizadorId,
+        tipoActividadId: activityData.tipoActividadId,
+        ubicacion: activityData.ubicacion || '',
+        coOrganizador: activityData.coOrganizer || '',
+        sponsor: activityData.sponsor || '',
+        bannerUrl: activityData.bannerUrl || '',
+        numeroYape: activityData.numeroYape || ''
+      };
+
+      const response = await axios.post(
+        `${API_BASE_URL}/actividades/create`,
+        payload,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      return normalizeResponse(response);
+    } catch (error) {
+      logError(error, 'activityService.createActivity');
+      const errorInfo = handleApiError(error);
+      throw { message: errorInfo.message };
+    }
+  },
+
+  /**
+   * PUT /api/v1/actividades/actualizar/{id} - Actualizar actividad
    */
   updateActivity: async (activityId, activityData) => {
     try {
       if (USE_MOCK_API) {
         return activityService.mockUpdateActivity(activityId, activityData);
-      } else {
-        const token = authService.getToken();
-        const response = await axios.put(
-          `${API_BASE_URL}/activities/${activityId}`,
-          activityData,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        return normalizeResponse(response);
       }
+
+      const token = authService.getToken();
+      
+      // Preparar el payload según la estructura del backend
+      const payload = {
+        titulo: activityData.title,
+        descripcion: activityData.description,
+        fechaInicio: activityData.startDate,
+        fechaFin: activityData.endDate,
+        horaInicio: activityData.startTime,
+        horaFin: activityData.endTime,
+        estadoId: activityData.estadoId,
+        organizadorId: activityData.organizadorId,
+        tipoActividadId: activityData.tipoActividadId,
+        ubicacion: activityData.ubicacion || '',
+        coOrganizador: activityData.coOrganizer || '',
+        sponsor: activityData.sponsor || '',
+        bannerUrl: activityData.bannerUrl || '',
+        numeroYape: activityData.numeroYape || ''
+      };
+
+      const response = await axios.put(
+        `${API_BASE_URL}/actividades/actualizar/${activityId}`,
+        payload,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      return normalizeResponse(response);
     } catch (error) {
-        logError(error, 'serviceName.methodName');
-        const errorInfo = handleApiError(error);
-        throw { message: errorInfo.message }; 
+      logError(error, 'activityService.updateActivity');
+      const errorInfo = handleApiError(error);
+      throw { message: errorInfo.message };
     }
   },
 
   /**
-   * Delete activity
+   * DELETE /api/v1/actividades/eliminar/{id} - Eliminar actividad
    */
   deleteActivity: async (activityId) => {
     try {
       if (USE_MOCK_API) {
         return activityService.mockDeleteActivity(activityId);
-      } else {
-        const token = authService.getToken();
-        const response = await axios.delete(
-          `${API_BASE_URL}/activities/${activityId}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        return normalizeResponse(response);
       }
+
+      const token = authService.getToken();
+      const response = await axios.delete(
+        `${API_BASE_URL}/actividades/eliminar/${activityId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      return normalizeResponse(response);
     } catch (error) {
-        logError(error, 'serviceName.methodName');
-        const errorInfo = handleApiError(error);
-        throw { message: errorInfo.message }; 
+      logError(error, 'activityService.deleteActivity');
+      const errorInfo = handleApiError(error);
+      throw { message: errorInfo.message };
     }
   },
 
   // ========== MOCK IMPLEMENTATIONS ==========
+
+  /**
+   * Mock: Get activity types
+   */
+  mockGetActivityTypes: async () => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          success: true,
+          data: [
+            {
+              id: '1',
+              nombreActividad: 'Curso',
+              descripcion: 'Curso académico'
+            },
+            {
+              id: '2',
+              nombreActividad: 'Taller',
+              descripcion: 'Taller práctico'
+            },
+            {
+              id: '3',
+              nombreActividad: 'Diplomado',
+              descripcion: 'Programa de diplomado'
+            },
+            {
+              id: '4',
+              nombreActividad: 'Ciclo de Conferencias',
+              descripcion: 'Serie de conferencias'
+            }
+          ]
+        });
+      }, 500);
+    });
+  },
+
+  /**
+   * Mock: Get activity states
+   */
+  mockGetActivityStates: async () => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          success: true,
+          data: [
+            {
+              id: '1',
+              codigo: 'activa',
+              etiqueta: 'Activa'
+            },
+            {
+              id: '2',
+              codigo: 'pendiente',
+              etiqueta: 'Pendiente'
+            },
+            {
+              id: '3',
+              codigo: 'finalizada',
+              etiqueta: 'Finalizada'
+            }
+          ]
+        });
+      }, 500);
+    });
+  },
 
   /**
    * Mock: Create activity
@@ -209,11 +316,31 @@ const activityService = {
       setTimeout(() => {
         const mockActivity = {
           id: `activity_${Date.now()}`,
-          ...activityData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          status: 'activa',
-          participantCount: 0
+          titulo: activityData.titulo,
+          descripcion: activityData.descripcion,
+          fechaInicio: activityData.fechaInicio,
+          fechaFin: activityData.fechaFin,
+          horaInicio: activityData.horaInicio,
+          horaFin: activityData.horaFin,
+          estado: {
+            id: activityData.estadoId,
+            codigo: 'activa',
+            etiqueta: 'Activa'
+          },
+          organizadorId: activityData.organizadorId,
+          tipoActividad: {
+            id: activityData.tipoActividadId,
+            nombreActividad: 'Curso',
+            descripcion: 'Curso académico'
+          },
+          ubicacion: activityData.ubicacion,
+          coOrganizador: activityData.coOrganizador,
+          sponsor: activityData.sponsor,
+          bannerUrl: activityData.bannerUrl,
+          numeroYape: activityData.numeroYape,
+          fechaCreacion: new Date().toISOString(),
+          fechaActualizacion: new Date().toISOString(),
+          activa: true
         };
 
         resolve({
@@ -236,36 +363,39 @@ const activityService = {
           data: [
             {
               id: 'act_001',
+              titulo: 'Gestión Ágil de Proyectos TI',
+              descripcion: 'Curso práctico sobre metodologías ágiles',
+              fechaInicio: '2025-02-01',
+              fechaFin: '2025-03-01',
+              horaInicio: '09:00',
+              horaFin: '17:00',
+              estado: {
+                id: '1',
+                codigo: 'activa',
+                etiqueta: 'Activa'
+              },
+              organizadorId: 'org_001',
+              tipoActividad: {
+                id: '1',
+                nombreActividad: 'Curso',
+                descripcion: 'Curso académico'
+              },
+              ubicacion: 'Aula 101',
+              coOrganizador: '',
+              sponsor: '',
+              bannerUrl: '',
+              numeroYape: '',
+              fechaCreacion: '2025-01-15T10:00:00Z',
+              fechaActualizacion: '2025-01-15T10:00:00Z',
+              activa: true,
+              // Campos adicionales para compatibilidad con la UI existente
               title: 'Gestión Ágil de Proyectos TI',
               type: 'Curso',
-              status: 'en_curso',
+              status: 'activa',
               startDate: '02 Feb 2025',
               endDate: '28 Feb 2025',
               duration: '40 horas',
-              participantCount: 25,
-              coverImage: null
-            },
-            {
-              id: 'act_002',
-              title: 'Diplomado en Inteligencia de Negocios',
-              type: 'Diplomado',
-              status: 'pendiente',
-              startDate: '15 Mar 2025',
-              endDate: '15 Jun 2025',
-              duration: '120 horas',
-              participantCount: 18,
-              coverImage: null
-            },
-            {
-              id: 'act_003',
-              title: 'Taller de Excel Avanzado',
-              type: 'Taller',
-              status: 'finalizada',
-              startDate: '01 Jan 2025',
-              endDate: '31 Jan 2025',
-              duration: '16 horas',
-              participantCount: 32,
-              coverImage: null
+              participantCount: 25
             }
           ]
         });
@@ -283,12 +413,31 @@ const activityService = {
           success: true,
           data: {
             id: activityId,
-            title: 'Gestión Ágil de Proyectos TI',
-            type: 'curso',
-            status: 'activa',
-            startDate: '2025-02-01',
-            endDate: '2025-03-01',
-            participantCount: 25
+            titulo: 'Gestión Ágil de Proyectos TI',
+            descripcion: 'Curso práctico sobre metodologías ágiles',
+            fechaInicio: '2025-02-01',
+            fechaFin: '2025-03-01',
+            horaInicio: '09:00',
+            horaFin: '17:00',
+            estado: {
+              id: '1',
+              codigo: 'activa',
+              etiqueta: 'Activa'
+            },
+            organizadorId: 'org_001',
+            tipoActividad: {
+              id: '1',
+              nombreActividad: 'Curso',
+              descripcion: 'Curso académico'
+            },
+            ubicacion: 'Aula 101',
+            coOrganizador: '',
+            sponsor: '',
+            bannerUrl: '',
+            numeroYape: '',
+            fechaCreacion: '2025-01-15T10:00:00Z',
+            fechaActualizacion: '2025-01-15T10:00:00Z',
+            activa: true
           }
         });
       }, 600);
@@ -307,7 +456,7 @@ const activityService = {
           data: {
             id: activityId,
             ...activityData,
-            updatedAt: new Date().toISOString()
+            fechaActualizacion: new Date().toISOString()
           }
         });
       }, 800);
@@ -328,219 +477,55 @@ const activityService = {
     });
   },
 
-  // ========== DASHBOARD METHODS ==========
+  // ========== MÉTODOS LEGACY (mantener para compatibilidad) ==========
 
-  /**
-   * Get dashboard statistics
-   */
+  getActivityDetails: async (activityId) => {
+    // Redirigir a getActivity
+    return activityService.getActivity(activityId);
+  },
+
   getDashboardStats: async () => {
-    try {
-      if (USE_MOCK_API) {
-        return activityService.mockGetDashboardStats();
-      } else {
-        const token = authService.getToken();
-        const response = await axios.get(
-          `${API_BASE_URL}/dashboard/stats`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        return normalizeResponse(response);
-      }
-    } catch (error) {
-        logError(error, 'serviceName.methodName');
-        const errorInfo = handleApiError(error);
-        throw { message: errorInfo.message }; 
-    }
+    // Mantener mock por ahora
+    return activityService.mockGetDashboardStats();
   },
 
-  /**
-   * Get participants for an activity
-   */
   getParticipants: async (activityId) => {
-    try {
-      if (USE_MOCK_API) {
-        return activityService.mockGetParticipants(activityId);
-      } else {
-        const token = authService.getToken();
-        const response = await axios.get(
-          `${API_BASE_URL}/activities/${activityId}/participants`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        return normalizeResponse(response);
-      }
-    } catch (error) {
-        logError(error, 'serviceName.methodName');
-        const errorInfo = handleApiError(error);
-        throw { message: errorInfo.message }; 
-    }
+    return activityService.mockGetParticipants(activityId);
   },
 
-  /**
-   * Save attendance for participants
-   */
   saveAttendance: async (activityId, attendance) => {
-    try {
-      if (USE_MOCK_API) {
-        return activityService.mockSaveAttendance(activityId, attendance);
-      } else {
-        const token = authService.getToken();
-        const response = await axios.post(
-          `${API_BASE_URL}/activities/${activityId}/attendance`,
-          { attendance },
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        return normalizeResponse(response);
-      }
-    } catch (error) {
-        logError(error, 'serviceName.methodName');
-        const errorInfo = handleApiError(error);
-        throw { message: errorInfo.message }; 
-    }
+    return activityService.mockSaveAttendance(activityId, attendance);
   },
 
-  /**
-   * Get certificates issued for an activity
-   */
   getCertificates: async (activityId) => {
-    try {
-      if (USE_MOCK_API) {
-        return activityService.mockGetCertificates(activityId);
-      } else {
-        const token = authService.getToken();
-        const response = await axios.get(
-          `${API_BASE_URL}/activities/${activityId}/certificates`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        return normalizeResponse(response);
-      }
-    } catch (error) {
-        logError(error, 'serviceName.methodName');
-        const errorInfo = handleApiError(error);
-        throw { message: errorInfo.message }; 
-    }
+    return activityService.mockGetCertificates(activityId);
   },
 
-  /**
-   * Get participants eligible for certificate issuance
-   */
   getIssuableParticipants: async (activityId) => {
-    try {
-      if (USE_MOCK_API) {
-        return activityService.mockGetIssuableParticipants(activityId);
-      } else {
-        const token = authService.getToken();
-        const response = await axios.get(
-          `${API_BASE_URL}/activities/${activityId}/issuable-participants`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        return normalizeResponse(response);
-      }
-    } catch (error) {
-        logError(error, 'serviceName.methodName');
-        const errorInfo = handleApiError(error);
-        throw { message: errorInfo.message }; 
-    }
+    return activityService.mockGetIssuableParticipants(activityId);
   },
 
-  /**
-   * Issue certificate for a single participant
-   */
   issueCertificate: async (activityId, participantId) => {
-    try {
-      if (USE_MOCK_API) {
-        return activityService.mockIssueCertificate(activityId, participantId);
-      } else {
-        const token = authService.getToken();
-        const response = await axios.post(
-          `${API_BASE_URL}/activities/${activityId}/issue-certificate/${participantId}`,
-          {},
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        return normalizeResponse(response);
-      }
-    } catch (error) {
-        logError(error, 'serviceName.methodName');
-        const errorInfo = handleApiError(error);
-        throw { message: errorInfo.message }; 
-    }
+    return activityService.mockIssueCertificate(activityId, participantId);
   },
 
-  /**
-   * Bulk issue certificates for all eligible participants
-   */
   bulkIssueCertificates: async (activityId) => {
-    try {
-      if (USE_MOCK_API) {
-        return activityService.mockBulkIssueCertificates(activityId);
-      } else {
-        const token = authService.getToken();
-        const response = await axios.post(
-          `${API_BASE_URL}/activities/${activityId}/bulk-issue-certificates`,
-          {},
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        return normalizeResponse(response);
-      }
-    } catch (error) {
-        logError(error, 'serviceName.methodName');
-        const errorInfo = handleApiError(error);
-        throw { message: errorInfo.message }; 
-    }
+    return activityService.mockBulkIssueCertificates(activityId);
   },
 
-  // ========== MOCK DASHBOARD METHODS ==========
-
-  /**
-   * Mock: Get activity details
-   */
-  mockGetActivityDetails: async (activityId) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          success: true,
-          data: {
-            id: activityId,
-            title: 'Gestión Ágil de Proyectos TI',
-            status: 'en_curso',
-            startDate: '02 Feb 2025',
-            endDate: '28 Feb 2025',
-            description: 'Actividad en progreso'
-          }
-        });
-      }, 400);
-    });
+  verifyPaymentManually: async (activityId, participantId, proofFile) => {
+    return activityService.mockVerifyPaymentManually(activityId, participantId);
   },
 
-  /**
-   * Mock: Get dashboard statistics
-   */
+  uploadReport: async (activityId, reportType, file) => {
+    return activityService.mockUploadReport(activityId, reportType);
+  },
+
+  getAvailableActivitiesForEnrollment: async () => {
+    return activityService.mockGetAvailableActivitiesForEnrollment();
+  },
+
+  // Mocks legacy
   mockGetDashboardStats: async () => {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -550,518 +535,143 @@ const activityService = {
             activitiesCount: 2,
             participantsCount: 43,
             certificatesCount: 38,
-            attendanceRate: 88,
-            recentActivities: [
-              {
-                id: 'act_001',
-                title: 'Gestión Ágil de Proyectos TI',
-                type: 'Curso',
-                date: '02 Feb 2025',
-                status: 'Activa'
-              },
-              {
-                id: 'act_002',
-                title: 'Diplomado en Inteligencia de Negocios',
-                type: 'Diplomado',
-                date: '15 Feb 2025',
-                status: 'Próxima'
-              }
-            ]
+            attendanceRate: 88
           }
         });
       }, 800);
     });
   },
 
-  /**
-   * Mock: Get participants for activity
-   */
-  mockGetParticipants: async (activityId) => {
+  mockGetParticipants: async () => {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
           success: true,
-          data: [
-            {
-              id: 'part_001',
-              name: 'Juan Pérez García',
-              email: 'juan.perez@example.com',
-              registrationDate: '25 Jan 2025',
-              attended: true,
-              paymentStatus: 'PAGADO'
-            },
-            {
-              id: 'part_002',
-              name: 'María López Martínez',
-              email: 'maria.lopez@example.com',
-              registrationDate: '26 Jan 2025',
-              attended: true,
-              paymentStatus: 'PAGADO'
-            },
-            {
-              id: 'part_003',
-              name: 'Carlos González López',
-              email: 'carlos.gonzalez@example.com',
-              registrationDate: '27 Jan 2025',
-              attended: false,
-              paymentStatus: 'PENDIENTE'
-            },
-            {
-              id: 'part_004',
-              name: 'Ana Fernández Rodríguez',
-              email: 'ana.fernandez@example.com',
-              registrationDate: '28 Jan 2025',
-              attended: true,
-              paymentStatus: 'EXONERADO'
-            }
-          ]
+          data: []
         });
       }, 600);
     });
   },
 
-  /**
-   * Mock: Save attendance
-   */
-  mockSaveAttendance: async (activityId, attendance) => {
+  mockSaveAttendance: async () => {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
           success: true,
-          message: 'Asistencia guardada exitosamente',
-          data: {
-            activityId,
-            recordedAt: new Date().toISOString()
-          }
+          message: 'Asistencia guardada'
         });
       }, 600);
     });
   },
 
-  /**
-   * Mock: Get issued certificates
-   */
-  mockGetCertificates: async (activityId) => {
+  mockGetCertificates: async () => {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
           success: true,
-          data: [
-            {
-              id: 'cert_001',
-              participantName: 'Juan Pérez García',
-              email: 'juan.perez@example.com',
-              issuedDate: '02 Feb 2025'
-            },
-            {
-              id: 'cert_002',
-              participantName: 'María López Martínez',
-              email: 'maria.lopez@example.com',
-              issuedDate: '02 Feb 2025'
-            },
-            {
-              id: 'cert_003',
-              participantName: 'Ana Fernández Rodríguez',
-              email: 'ana.fernandez@example.com',
-              issuedDate: '03 Feb 2025'
-            }
-          ]
+          data: []
         });
       }, 600);
     });
   },
 
-  /**
-   * Mock: Get issuable participants (only PAGADO or EXONERADO)
-   */
-  mockGetIssuableParticipants: async (activityId) => {
+  mockGetIssuableParticipants: async () => {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
           success: true,
-          data: [
-            {
-              id: 'part_001',
-              name: 'Juan Pérez García',
-              email: 'juan.perez@example.com',
-              attendanceRate: 100,
-              paymentStatus: 'PAGADO'
-            },
-            {
-              id: 'part_002',
-              name: 'María López Martínez',
-              email: 'maria.lopez@example.com',
-              attendanceRate: 95,
-              paymentStatus: 'PAGADO'
-            },
-            {
-              id: 'part_004',
-              name: 'Ana Fernández Rodríguez',
-              email: 'ana.fernandez@example.com',
-              attendanceRate: 88,
-              paymentStatus: 'EXONERADO'
-            }
-          ]
+          data: []
         });
       }, 600);
     });
   },
 
-  /**
-   * Mock: Issue certificate for participant
-   */
-  mockIssueCertificate: async (activityId, participantId) => {
+  mockIssueCertificate: async () => {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
           success: true,
-          message: 'Certificado emitido exitosamente',
-          data: {
-            certificateId: `cert_${Date.now()}`,
-            participantId,
-            activityId,
-            issuedAt: new Date().toISOString()
-          }
+          message: 'Certificado emitido'
         });
       }, 800);
     });
   },
 
-  /**
-   * Mock: Bulk issue certificates
-   */
-  mockBulkIssueCertificates: async (activityId) => {
+  mockBulkIssueCertificates: async () => {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
           success: true,
-          issued: 2,
-          message: '2 certificados emitidos exitosamente',
-          data: {
-            activityId,
-            issuedAt: new Date().toISOString()
-          }
+          message: 'Certificados emitidos'
         });
       }, 1200);
     });
   },
 
-  /**
-   * Verify payment manually (R19)
-   * @param {String} activityId - Activity ID
-   * @param {String} participantId - Participant ID
-   * @param {File} proofFile - Payment proof file
-   * @returns {Promise<Object>} Response with updated payment status
-   */
-  verifyPaymentManually: async (activityId, participantId, proofFile) => {
-    try {
-      if (USE_MOCK_API) {
-        return activityService.mockVerifyPaymentManually(activityId, participantId);
-      } else {
-        const token = authService.getToken();
-        const formData = new FormData();
-        formData.append('proofFile', proofFile);
-
-        const response = await axios.put(
-          `${API_BASE_URL}/activities/${activityId}/participants/${participantId}/payment`,
-          formData,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data'
-            }
-          }
-        );
-        return normalizeResponse(response);
-      }
-    } catch (error) {
-        logError(error, 'serviceName.methodName');
-        const errorInfo = handleApiError(error);
-        throw { message: errorInfo.message }; 
-    }
-  },
-
-  /**
-   * Upload report document (R22, R23)
-   * @param {String} activityId - Activity ID
-   * @param {String} reportType - Type of report (proposal, final, evidence)
-   * @param {File|File[]} file - File(s) to upload
-   * @returns {Promise<Object>} Response with upload confirmation
-   */
-  uploadReport: async (activityId, reportType, file) => {
-    try {
-      if (USE_MOCK_API) {
-        return activityService.mockUploadReport(activityId, reportType);
-      } else {
-        const token = authService.getToken();
-        const formData = new FormData();
-
-        // Handle both single and multiple files
-        if (Array.isArray(file)) {
-          file.forEach((f) => {
-            formData.append('files', f);
-          });
-        } else {
-          formData.append('file', file);
-        }
-
-        const response = await axios.post(
-          `${API_BASE_URL}/activities/${activityId}/reports/${reportType}`,
-          formData,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data'
-            }
-          }
-        );
-        return normalizeResponse(response);
-      }
-    } catch (error) {
-        logError(error, 'serviceName.methodName');
-        const errorInfo = handleApiError(error);
-        throw { message: errorInfo.message }; 
-    }
-  },
-
-  /**
-   * Mock: Verify payment manually
-   */
-  mockVerifyPaymentManually: async (activityId, participantId) => {
+  mockVerifyPaymentManually: async () => {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
           success: true,
-          message: 'Pago verificado y estado actualizado a PAGADO',
-          data: {
-            activityId,
-            participantId,
-            paymentStatus: 'PAGADO',
-            verifiedAt: new Date().toISOString()
-          }
+          message: 'Pago verificado'
         });
       }, 800);
     });
   },
 
-  /**
-   * Mock: Upload report document
-   */
-  mockUploadReport: async (activityId, reportType) => {
+  mockUploadReport: async () => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const reportLabels = {
-          proposal: 'Informe de Propuesta',
-          final: 'Informe Final y Temas Desarrollados',
-          evidence: 'Evidencia Fotográfica'
-        };
-
         resolve({
           success: true,
-          message: `${reportLabels[reportType] || 'Documento'} cargado exitosamente`,
-          data: {
-            activityId,
-            reportType,
-            uploadedAt: new Date().toISOString()
-          }
+          message: 'Documento cargado'
         });
       }, 800);
     });
   },
 
-
-  /**
-   * Normaliza una actividad cualquiera (mock o API real)
-   * al formato que usan las EventCards.
-   */
-  normalizeActivityForEvent: (raw) => {
-    if (!raw) return null;
-
-    // Título / descripción
-    const title =
-      raw.title ||
-      raw.titulo ||
-      raw.nombreActividad ||
-      (raw.tipoActividad && raw.tipoActividad.nombreActividad) ||
-      'Actividad sin título';
-
-    const description = raw.description || raw.descripcion || '';
-    const shortDescription = raw.shortDescription || '';
-
-    // Fechas
-    const startDate = raw.startDate || raw.fechaInicio || '';
-    const endDate = raw.endDate || raw.fechaFin || '';
-
-    const date =
-      raw.date ||
-      (startDate && endDate
-        ? `${startDate} - ${endDate}`
-        : startDate || endDate || '');
-
-    // Duración
-    const duration =
-      raw.duration ||
-      raw.estimatedDuration ||
-      (typeof raw.duracionEnDias === 'number'
-        ? `${raw.duracionEnDias} días`
-        : raw.duracionEnDias || '');
-
-    // Modalidad / ubicación / tipo
-    const modality = raw.modality || raw.modalidad || '';
-    const location = raw.location || raw.ubicacion || '';
-
-    const eventType =
-      raw.eventType ||
-      raw.event ||
-      (raw.tipoActividad && raw.tipoActividad.nombreActividad) ||
-      (raw.estado && raw.estado.etiqueta) ||
-      '';
-
-    // Estado
-    const status = raw.status || (raw.estado && raw.estado.codigo) || '';
-
-    const activa =
-      typeof raw.activa === 'boolean'
-        ? raw.activa
-        : status === 'activa' || status === 'en_curso';
-
-    const pendiente =
-      typeof raw.pendiente === 'boolean'
-        ? raw.pendiente
-        : status === 'pendiente' || status === 'proxima';
-
-    const finalizada =
-      typeof raw.finalizada === 'boolean'
-        ? raw.finalizada
-        : status === 'finalizada';
-
-    // Otros datos útiles
-    const price = raw.price ?? raw.precio ?? null;
-    const enrollment = raw.enrollment ?? raw.cantidadInscritos ?? null;
-
-    const imageUrl =
-      raw.imageUrl || raw.coverImage || '/images/flyer-prueba.png';
-
-    return {
-      ...raw,
-      title,
-      shortDescription,
-      description,
-      startDate,
-      endDate,
-      date,
-      duration,
-      modality,
-      location,
-      event: eventType,
-      imageUrl,
-      price,
-      enrollment,
-      status,
-      activa,
-      pendiente,
-      finalizada,
-    };
-  },
-
-
-
-
-
-
-
-  /**
-   * Get available activities for enrollment (not yet started - R12)
-   * @returns {Promise<Array>} List of enrollable activities
-   */
-  getAvailableActivitiesForEnrollment: async () => {
-    try {
-      if (USE_MOCK_API) {
-        return activityService.mockGetAvailableActivitiesForEnrollment();
-      } else {
-        const token = authService.getToken();
-        const response = await axios.get(
-          `${API_BASE_URL}/activities/available-for-enrollment`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        return normalizeResponse(response);
-      }
-    } catch (error) {
-        logError(error, 'serviceName.methodName');
-        const errorInfo = handleApiError(error);
-        throw { message: errorInfo.message }; 
-    }
-  },
-
-    /**
-   * Mock: Get available activities for enrollment (R12 - not started)
-   */
   mockGetAvailableActivitiesForEnrollment: async () => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const rawActivities = [
-          {
-            id: 'activity_001',
-            title: 'Gestión Ágil de Proyectos TI',
-            description: 'Curso práctico para gestionar proyectos de TI con Scrum y Kanban.',
-            type: 'curso',
-            startDate: '2025-03-15',
-            endDate: '2025-05-15',
-            duration: '10 semanas',
-            instructor: 'Dr. Carlos García',
-            price: 299.99,
-            status: 'pendiente',
-            enrollment: 45,
-            imageUrl: '/images/flyer-prueba.png',
-            activa: false,
-            pendiente: true,
-            finalizada: false,
-          },
-          {
-            id: 'activity_002',
-            title: 'Machine Learning Avanzado',
-            description: 'Algoritmos avanzados de aprendizaje automático.',
-            type: 'taller',
-            startDate: '2025-03-22',
-            endDate: '2025-04-22',
-            duration: '4 semanas',
-            instructor: 'Ing. María López',
-            price: 399.99,
-            status: 'activa',
-            enrollment: 28,
-            imageUrl: '/images/flyer-prueba.png',
-            activa: true,
-            pendiente: false,
-            finalizada: false,
-          },
-          {
-            id: 'activity_003',
-            title: 'Cloud Computing con AWS',
-            description: 'Arquitectura y deployment en AWS.',
-            type: 'curso',
-            startDate: '2025-04-01',
-            endDate: '2025-05-30',
-            duration: '8 semanas',
-            instructor: 'Ing. Roberto Chen',
-            price: 449.99,
-            status: 'finalizada',
-            enrollment: 32,
-            imageUrl: '/images/flyer-prueba.png',
-            activa: false,
-            pendiente: false,
-            finalizada: true,
-          },
-        ];
-
         resolve({
-          data: rawActivities.map(activityService.normalizeActivityForEvent),
+          success: true,
+          data: []
         });
       }, 1000);
     });
+  },
+
+  /**
+   * Normaliza una actividad del backend al formato de la UI
+   */
+  normalizeActivityForUI: (activity) => {
+    if (!activity) return null;
+
+    return {
+      id: activity.id,
+      title: activity.titulo || activity.title,
+      type: activity.tipoActividad?.nombreActividad || activity.type,
+      status: activity.estado?.codigo || activity.status,
+      startDate: activity.fechaInicio || activity.startDate,
+      endDate: activity.fechaFin || activity.endDate,
+      startTime: activity.horaInicio || activity.startTime || '09:00',
+      endTime: activity.horaFin || activity.endTime || '17:00',
+      description: activity.descripcion || activity.description,
+      primaryOrganizer: activity.organizadorId || activity.primaryOrganizer,
+      coOrganizer: activity.coOrganizador || activity.coOrganizer || '',
+      sponsor: activity.sponsor || '',
+      duration: activity.duration || '40 horas',
+      participantCount: activity.participantCount || 0,
+      coverImage: activity.bannerUrl || activity.coverImage || null,
+      // Datos completos del backend
+      estadoId: activity.estado?.id || activity.estadoId,
+      tipoActividadId: activity.tipoActividad?.id || activity.tipoActividadId,
+      organizadorId: activity.organizadorId,
+      ubicacion: activity.ubicacion || '',
+      bannerUrl: activity.bannerUrl || '',
+      numeroYape: activity.numeroYape || '',
+      activa: activity.activa
+    };
   }
 };
 
