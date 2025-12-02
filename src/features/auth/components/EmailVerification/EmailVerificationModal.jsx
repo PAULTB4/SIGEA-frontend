@@ -4,6 +4,8 @@ import { Button, Alert } from '../../../../components/ui';
 import { CodeInput } from '../../../../components/ui/CodeInput';
 import useEmailVerification from '../../hooks/useEmailVerification';
 import styles from './emailVerification.module.css';
+import { useRef } from "react";
+
 
 /**
  * Modal para verificación de correo electrónico
@@ -34,9 +36,15 @@ export const EmailVerificationModal = ({
   } = useEmailVerification();
 
   // Enviar código automáticamente al montar el componente
-  useEffect(() => {
+ const codeHasBeenSent = useRef(false);
+
+useEffect(() => {
+  if (!codeHasBeenSent.current && email && nombres) {
     sendCode(email, nombres);
-  }, []);
+    codeHasBeenSent.current = true;
+  }
+}, [email, nombres]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();

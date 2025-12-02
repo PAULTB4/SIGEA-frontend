@@ -61,8 +61,12 @@ export const AuthProvider = ({ children }) => {
       credentials.rememberMe || false
     );
 
+    // ✅ AGREGAR: Obtener el userId del token
+    const userId = authService.getUserId();
+
     // Si llegamos aquí, el login fue exitoso
     const userData = {
+      id: userId,
       email: response.user.email,
       role: response.user.role
     };
